@@ -1,18 +1,16 @@
 
 import React, { useEffect, useState } from "react";
 import { 
-  ArrowDownCircle, 
-  ArrowUpCircle, 
   ShoppingBag, 
   Coffee, 
   Home, 
   Car,
-  CreditCard,
   Wallet,
   Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TransactionListProps {
   type: "all" | "expenses" | "income";
@@ -113,53 +111,55 @@ export const TransactionList = ({ type }: TransactionListProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      {transactions.map((transaction) => {
-        const IconComponent = categoryIconMap[transaction.category] || 
-          (transaction.type === "expense" ? ShoppingBag : Wallet);
-          
-        return (
-          <div
-            key={transaction.id}
-            className="flex items-center justify-between p-4 rounded-lg border border-border transition-colors"
-          >
-            <div className="flex items-center space-x-4">
-              <div
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center",
-                  transaction.type === "expense" ? "bg-vermelho/10" : "bg-verde/10"
-                )}
-              >
-                <IconComponent 
+    <ScrollArea className="h-[300px]">
+      <div className="space-y-4">
+        {transactions.map((transaction) => {
+          const IconComponent = categoryIconMap[transaction.category] || 
+            (transaction.type === "expense" ? ShoppingBag : Wallet);
+            
+          return (
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between p-4 rounded-lg border border-border transition-colors"
+            >
+              <div className="flex items-center space-x-4">
+                <div
                   className={cn(
-                    "h-5 w-5",
-                    transaction.type === "expense" ? "text-vermelho" : "text-verde"
-                  )} 
-                />
+                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    transaction.type === "expense" ? "bg-expense/10" : "bg-income/10"
+                  )}
+                >
+                  <IconComponent 
+                    className={cn(
+                      "h-5 w-5",
+                      transaction.type === "expense" ? "text-expense" : "text-income"
+                    )} 
+                  />
+                </div>
+                <div>
+                  <p className="font-medium">{transaction.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {transaction.category} • {transaction.wallet?.name || "Carteira removida"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">{transaction.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {transaction.category} • {transaction.wallet?.name || "Carteira removida"}
+              <div className="text-right">
+                <p
+                  className={cn(
+                    "font-bold",
+                    transaction.type === "expense" ? "text-expense" : "text-income"
+                  )}
+                >
+                  {transaction.type === "expense" ? "-" : "+"}R$ {transaction.amount.toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(transaction.date).toLocaleDateString("pt-BR")}
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <p
-                className={cn(
-                  "font-bold",
-                  transaction.type === "expense" ? "text-vermelho" : "text-verde"
-                )}
-              >
-                {transaction.type === "expense" ? "-" : "+"}R$ {transaction.amount.toFixed(2)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {new Date(transaction.date).toLocaleDateString("pt-BR")}
-              </p>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </ScrollArea>
   );
 };

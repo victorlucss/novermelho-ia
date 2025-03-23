@@ -107,7 +107,7 @@ export const TransactionTable = ({ type }: TransactionTableProps) => {
             <TableCell className="text-right font-medium">
               <span
                 className={cn(
-                  type === "expenses" ? "text-vermelho" : "text-verde"
+                  type === "expenses" ? "text-expense" : "text-income"
                 )}
               >
                 {type === "expenses" ? "-" : "+"}R${" "}

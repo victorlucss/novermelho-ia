@@ -19,10 +19,11 @@ import {
   PieChart,
   CreditCard,
   PlusCircle,
-  LogOut,
   Settings,
   Wallet,
+  LineChart,
 } from "lucide-react";
+import { UserMenu } from "./UserMenu";
 
 export const MainNavigation = () => {
   const location = useLocation();
@@ -37,6 +38,11 @@ export const MainNavigation = () => {
       title: "Análise",
       icon: PieChart,
       path: "/analise",
+    },
+    {
+      title: "Orçamentos",
+      icon: LineChart,
+      path: "/orcamentos",
     },
     {
       title: "Despesas",
@@ -57,9 +63,9 @@ export const MainNavigation = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-vermelho flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-semibold">NV</span>
           </div>
           <div className="font-semibold text-lg">NoVermelho</div>
@@ -90,29 +96,8 @@ export const MainNavigation = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/configuracoes" className="flex items-center space-x-2 w-full">
-                    <Settings size={18} />
-                    <span>Configurações</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/logout" className="flex items-center space-x-2 w-full text-vermelho">
-                    <LogOut size={18} />
-                    <span>Sair</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarFooter className="border-t border-border p-4">
+        <UserMenu />
       </SidebarFooter>
     </Sidebar>
   );

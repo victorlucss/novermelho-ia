@@ -6,11 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExpenseSummary } from "./ExpenseSummary";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ExpenseLineChart } from "./ExpenseLineChart";
 import { TransactionList } from "./TransactionList";
-import { WalletSummary } from "./WalletSummary";
 import { CalendarIcon, Plus, Loader2 } from "lucide-react";
 import { AddTransactionDialog } from "./AddTransactionDialog";
 import { cn } from "@/lib/utils";
@@ -24,11 +22,35 @@ export const DashboardPage = () => {
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [monthlyBalance, setMonthlyBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [transactionFilter, setTransactionFilter] = useState<"all" | "expenses" | "income">("all");
+  const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
 
   const handleAddTransaction = (type: "despesa" | "receita") => {
     setTransactionType(type);
     setIsAddTransactionOpen(true);
   };
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data } = await supabase
+            .from('user_profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+            
+          setUserProfile(data);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
 
   useEffect(() => {
     const fetchMonthlySummary = async () => {
@@ -88,7 +110,7 @@ export const DashboardPage = () => {
     <div className="space-y-8 pb-16 md:pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Olá, Usuário</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Olá, {userProfile?.full_name || "Usuário"}</h1>
           <p className="text-muted-foreground">
             Acompanhe suas finanças e fique no controle.
           </p>
@@ -127,7 +149,12 @@ export const DashboardPage = () => {
               </div>
             ) : (
               <>
-                <div className="text-2xl font-bold">R$ {monthlyBalance.toFixed(2)}</div>
+                <div className={cn(
+                  "text-2xl font-bold",
+                  monthlyBalance >= 0 ? "text-success" : "text-expense"
+                )}>
+                  R$ {monthlyBalance.toFixed(2)}
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {monthlyBalance >= 0 
                     ? "Você está com saldo positivo" 
@@ -149,7 +176,7 @@ export const DashboardPage = () => {
               </div>
             ) : (
               <>
-                <div className="text-2xl font-bold text-vermelho">R$ {monthlyExpenses.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-expense">R$ {monthlyExpenses.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()
                     ? "Mês atual"
@@ -171,7 +198,7 @@ export const DashboardPage = () => {
               </div>
             ) : (
               <>
-                <div className="text-2xl font-bold text-verde">R$ {monthlyIncome.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-income">R$ {monthlyIncome.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()
                     ? "Mês atual"
@@ -184,20 +211,12 @@ export const DashboardPage = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-7">
-        <Card className="col-span-4">
+        <Card className="col-span-7">
           <CardHeader>
-            <CardTitle>Resumo de Gastos</CardTitle>
+            <CardTitle>Gastos Recentes</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ExpenseSummary selectedDate={selectedDate} />
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Carteiras</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <WalletSummary />
+            <ExpenseLineChart />
           </CardContent>
         </Card>
       </div>
@@ -206,11 +225,24 @@ export const DashboardPage = () => {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Transações Recentes</CardTitle>
           <div className="flex space-x-2">
+            <Select
+              value={transactionFilter}
+              onValueChange={(value: "all" | "expenses" | "income") => setTransactionFilter(value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrar transações" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as transações</SelectItem>
+                <SelectItem value="expenses">Apenas despesas</SelectItem>
+                <SelectItem value="income">Apenas receitas</SelectItem>
+              </SelectContent>
+            </Select>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => handleAddTransaction("despesa")}
-              className="text-vermelho border-vermelho/20 hover:bg-vermelho/10"
+              className="text-expense border-expense/20 hover:bg-expense/10"
             >
               <Plus className="h-4 w-4 mr-1" />
               Despesa
@@ -219,7 +251,7 @@ export const DashboardPage = () => {
               variant="outline" 
               size="sm" 
               onClick={() => handleAddTransaction("receita")}
-              className="text-verde border-verde/20 hover:bg-verde/10"
+              className="text-income border-income/20 hover:bg-income/10"
             >
               <Plus className="h-4 w-4 mr-1" />
               Receita
@@ -227,28 +259,7 @@ export const DashboardPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="expenses">Despesas</TabsTrigger>
-              <TabsTrigger value="income">Receitas</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all">
-              <ScrollArea className="h-[300px]">
-                <TransactionList type="all" />
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="expenses">
-              <ScrollArea className="h-[300px]">
-                <TransactionList type="expenses" />
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="income">
-              <ScrollArea className="h-[300px]">
-                <TransactionList type="income" />
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+          <TransactionList type={transactionFilter} />
         </CardContent>
       </Card>
 

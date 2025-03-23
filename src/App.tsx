@@ -14,6 +14,8 @@ import { ExpensesPage } from "./components/expenses/ExpensesPage";
 import { IncomePage } from "./components/income/IncomePage";
 import { AnalyticsPage } from "./components/analytics/AnalyticsPage";
 import { WalletPage } from "./components/wallet/WalletPage";
+import { ProfilePage } from "./components/profile/ProfilePage";
+import { BudgetPage } from "./components/budget/BudgetPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -128,6 +130,32 @@ const App = () => {
                 user ? (
                   <AppLayout>
                     <WalletPage />
+                  </AppLayout>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            <Route 
+              path="/orcamentos"
+              element={
+                user ? (
+                  <AppLayout>
+                    <BudgetPage />
+                  </AppLayout>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            <Route 
+              path="/perfil"
+              element={
+                user ? (
+                  <AppLayout>
+                    <ProfilePage />
                   </AppLayout>
                 ) : (
                   <Navigate to="/login" replace />

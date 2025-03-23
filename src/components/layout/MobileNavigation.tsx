@@ -8,7 +8,8 @@ import {
   CreditCard,
   PlusCircle,
   Wallet,
-  Settings,
+  LineChart,
+  User,
 } from "lucide-react";
 
 export const MobileNavigation = () => {
@@ -26,19 +27,19 @@ export const MobileNavigation = () => {
       path: "/analise",
     },
     {
-      title: "Despesas",
-      icon: CreditCard,
-      path: "/despesas",
-    },
-    {
-      title: "Receitas",
-      icon: PlusCircle,
-      path: "/receitas",
+      title: "Orçamento",
+      icon: LineChart,
+      path: "/orcamentos",
     },
     {
       title: "Carteiras",
       icon: Wallet,
       path: "/carteiras",
+    },
+    {
+      title: "Perfil",
+      icon: User,
+      path: "/perfil",
     },
   ];
 

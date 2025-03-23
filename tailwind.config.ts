@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -53,16 +52,35 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				vermelho: {
-					DEFAULT: '#E63946',
-					light: '#FF8B98',
-					dark: '#C01E29'
+				income: {
+					DEFAULT: '#2563EB',
+					light: '#60A5FA',
+					dark: '#1E40AF'
 				},
-				verde: {
-					DEFAULT: '#2A9D8F',
-					light: '#57CBC0',
-					dark: '#1F756B'
+				expense: {
+					DEFAULT: '#EF4444',
+					light: '#FCA5A5',
+					dark: '#B91C1C'
 				},
+				warning: {
+					DEFAULT: '#FACC15',
+					light: '#FDE68A',
+					dark: '#D97706'
+				},
+				info: {
+					DEFAULT: '#60A5FA',
+					light: '#93C5FD',
+					dark: '#2563EB'
+				},
+				success: {
+					DEFAULT: '#22D3EE',
+					light: '#A5F3FC',
+					dark: '#0891B2'
+				},
+				'category-1': '#64748B',
+				'category-2': '#1E40AF',
+				'category-3': '#0284C7',
+				'category-4': '#4C1D95',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
