@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,82 +10,78 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TransactionTableProps {
   type: "expenses" | "income";
 }
 
-const expenseTransactions = [
-  {
-    id: 1,
-    name: "Aluguel",
-    category: "Moradia",
-    amount: 1200,
-    date: "2023-10-01",
-    wallet: "Nubank",
-    recurrent: true,
-  },
-  {
-    id: 3,
-    name: "Supermercado",
-    category: "Alimentação",
-    amount: 350,
-    date: "2023-10-08",
-    wallet: "Nubank",
-    recurrent: false,
-  },
-  {
-    id: 4,
-    name: "Café",
-    category: "Alimentação",
-    amount: 15,
-    date: "2023-10-10",
-    wallet: "Dinheiro",
-    recurrent: false,
-  },
-  {
-    id: 5,
-    name: "Combustível",
-    category: "Transporte",
-    amount: 200,
-    date: "2023-10-12",
-    wallet: "C6 Bank",
-    recurrent: false,
-  },
-  {
-    id: 7,
-    name: "Internet",
-    category: "Serviços",
-    amount: 100,
-    date: "2023-10-20",
-    wallet: "C6 Bank",
-    recurrent: true,
-  },
-];
+interface WalletType {
+  id: string;
+  name: string;
+}
 
-const incomeTransactions = [
-  {
-    id: 2,
-    name: "Salário",
-    category: "Renda",
-    amount: 5000,
-    date: "2023-10-05",
-    wallet: "Itaú",
-    recurrent: true,
-  },
-  {
-    id: 6,
-    name: "Freelance",
-    category: "Renda Extra",
-    amount: 1200,
-    date: "2023-10-15",
-    wallet: "Nubank",
-    recurrent: false,
-  },
-];
+interface TransactionType {
+  id: string;
+  name: string;
+  category: string;
+  amount: number;
+  date: string;
+  type: string;
+  wallet_id: string;
+  wallet: WalletType | null;
+  recurrent: boolean;
+}
 
 export const TransactionTable = ({ type }: TransactionTableProps) => {
-  const transactions = type === "expenses" ? expenseTransactions : incomeTransactions;
+  const [transactions, setTransactions] = useState<TransactionType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*, wallet:wallets(id, name)')
+          .eq('type', type === 'expenses' ? 'expense' : 'income')
+          .order('date', { ascending: false });
+        
+        if (error) {
+          console.error(`Error fetching ${type}:`, error);
+        } else {
+          setTransactions(data || []);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${type}:`, error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [type]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">
+          {type === "expenses" 
+            ? "Nenhuma despesa registrada" 
+            : "Nenhuma receita registrada"}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Table>
@@ -107,7 +103,7 @@ export const TransactionTable = ({ type }: TransactionTableProps) => {
             </TableCell>
             <TableCell>{transaction.name}</TableCell>
             <TableCell>{transaction.category}</TableCell>
-            <TableCell>{transaction.wallet}</TableCell>
+            <TableCell>{transaction.wallet?.name || "Carteira removida"}</TableCell>
             <TableCell className="text-right font-medium">
               <span
                 className={cn(

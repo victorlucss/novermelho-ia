@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -9,62 +9,23 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { format, subMonths, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
-const data = [
-  {
-    name: "Jan",
-    valor: 5000,
-  },
-  {
-    name: "Fev",
-    valor: 5000,
-  },
-  {
-    name: "Mar",
-    valor: 5200,
-  },
-  {
-    name: "Abr",
-    valor: 5200,
-  },
-  {
-    name: "Mai",
-    valor: 5300,
-  },
-  {
-    name: "Jun",
-    valor: 5300,
-  },
-  {
-    name: "Jul",
-    valor: 5400,
-  },
-  {
-    name: "Ago",
-    valor: 5400,
-  },
-  {
-    name: "Set",
-    valor: 5000,
-  },
-  {
-    name: "Out",
-    valor: 5000,
-  },
-  {
-    name: "Nov",
-    valor: 5200,
-  },
-  {
-    name: "Dez",
-    valor: 5500,
-  },
-];
+interface ChartData {
+  name: string;
+  valor: number;
+  date: Date;
+}
+
+const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass p-4 border border-border rounded-md">
+      <div className="p-4 border border-border rounded-md bg-background shadow-md">
         <p className="font-medium text-sm text-muted-foreground">{label}</p>
         <p className="font-bold text-md text-verde">
           Receita: R$ {payload[0].value.toFixed(2)}
@@ -77,6 +38,76 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export const IncomeChart = () => {
+  const [data, setData] = useState<ChartData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchIncomeHistory = async () => {
+      try {
+        setIsLoading(true);
+        const today = new Date();
+        const startDate = format(subMonths(today, 11), 'yyyy-MM-01'); // 12 months ago
+        const endDate = format(today, 'yyyy-MM-dd');
+        
+        // Fetch all income transactions for the last 12 months
+        const { data: incomeData, error } = await supabase
+          .from('transactions')
+          .select('amount, date')
+          .eq('type', 'income')
+          .gte('date', startDate)
+          .lte('date', endDate)
+          .order('date', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching income history:', error);
+          return;
+        }
+
+        // Group by month
+        const monthlyData = new Map<string, number>();
+        
+        // Initialize all months
+        for (let i = 0; i < 12; i++) {
+          const date = subMonths(today, i);
+          const monthYear = format(date, 'yyyy-MM');
+          monthlyData.set(monthYear, 0);
+        }
+        
+        // Fill with actual data
+        incomeData.forEach((transaction) => {
+          const monthYear = transaction.date.substring(0, 7); // YYYY-MM
+          const currentAmount = monthlyData.get(monthYear) || 0;
+          monthlyData.set(monthYear, currentAmount + parseFloat(transaction.amount));
+        });
+        
+        // Convert to chart data format and sort by date
+        const chartData = Array.from(monthlyData.entries())
+          .map(([monthYear, value]) => ({
+            name: monthNames[parseInt(monthYear.split('-')[1]) - 1],
+            valor: value,
+            date: parseISO(`${monthYear}-01`)
+          }))
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
+        
+        setData(chartData);
+      } catch (error) {
+        console.error('Error fetching income history:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchIncomeHistory();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart

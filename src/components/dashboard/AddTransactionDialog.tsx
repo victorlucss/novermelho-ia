@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -30,6 +30,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddTransactionDialogProps {
   open: boolean;
@@ -56,12 +57,10 @@ const incomeCategories = [
   "Outros",
 ];
 
-const wallets = [
-  "Nubank",
-  "Itaú",
-  "C6 Bank",
-  "Dinheiro",
-];
+interface WalletOption {
+  id: string;
+  name: string;
+}
 
 export const AddTransactionDialog = ({
   open,
@@ -70,22 +69,113 @@ export const AddTransactionDialog = ({
 }: AddTransactionDialogProps) => {
   const [date, setDate] = useState<Date>(new Date());
   const [isRecurrent, setIsRecurrent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wallets, setWallets] = useState<WalletOption[]>([]);
+  const [isLoadingWallets, setIsLoadingWallets] = useState(true);
+  
+  // Form state
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [walletId, setWalletId] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchWallets = async () => {
+      try {
+        setIsLoadingWallets(true);
+        const { data, error } = await supabase
+          .from('wallets')
+          .select('id, name')
+          .order('name', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching wallets:', error);
+          toast({
+            title: "Erro ao carregar carteiras",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          setWallets(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching wallets:', error);
+      } finally {
+        setIsLoadingWallets(false);
+      }
+    };
+
+    if (open) {
+      fetchWallets();
+      
+      // Reset form
+      setName("");
+      setAmount("");
+      setCategory("");
+      setWalletId("");
+      setDate(new Date());
+      setIsRecurrent(false);
+    }
+  }, [open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Aqui seria a lógica para salvar a transação no Supabase
-    toast({
-      title: `${type === "despesa" ? "Despesa" : "Receita"} adicionada`,
-      description: "A transação foi registrada com sucesso.",
-    });
+    if (!name || !amount || !category || !walletId) {
+      toast({
+        title: "Dados incompletos",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     
-    onOpenChange(false);
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          name: name,
+          amount: parseFloat(amount),
+          category: category,
+          date: format(date, 'yyyy-MM-dd'),
+          type: type === "despesa" ? "expense" : "income",
+          recurrent: isRecurrent,
+          wallet_id: walletId
+        })
+        .select();
+      
+      if (error) {
+        console.error('Error adding transaction:', error);
+        toast({
+          title: "Erro ao adicionar transação",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: `${type === "despesa" ? "Despesa" : "Receita"} adicionada`,
+          description: "A transação foi registrada com sucesso.",
+        });
+        
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      toast({
+        title: "Erro ao adicionar transação",
+        description: "Ocorreu um erro ao registrar a transação.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] glass animate-scale-in">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
             {type === "despesa" ? "Adicionar Despesa" : "Adicionar Receita"}
@@ -104,6 +194,8 @@ export const AddTransactionDialog = ({
                 id="name"
                 placeholder={type === "despesa" ? "Aluguel, Mercado..." : "Salário, Freelance..."}
                 className="col-span-3"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
@@ -118,6 +210,8 @@ export const AddTransactionDialog = ({
                 step="0.01"
                 min="0"
                 className="col-span-3"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
                 required
               />
             </div>
@@ -125,15 +219,19 @@ export const AddTransactionDialog = ({
               <Label htmlFor="category" className="text-right">
                 Categoria
               </Label>
-              <Select required>
+              <Select 
+                value={category} 
+                onValueChange={setCategory}
+                required
+              >
                 <SelectTrigger className="col-span-3" id="category">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
                   {(type === "despesa" ? expenseCategories : incomeCategories).map(
-                    (category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                    (cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
                       </SelectItem>
                     )
                   )}
@@ -144,18 +242,29 @@ export const AddTransactionDialog = ({
               <Label htmlFor="wallet" className="text-right">
                 Carteira
               </Label>
-              <Select required>
-                <SelectTrigger className="col-span-3" id="wallet">
-                  <SelectValue placeholder="Selecione uma carteira" />
-                </SelectTrigger>
-                <SelectContent>
-                  {wallets.map((wallet) => (
-                    <SelectItem key={wallet} value={wallet}>
-                      {wallet}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isLoadingWallets ? (
+                <div className="col-span-3 flex items-center space-x-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Carregando carteiras...</span>
+                </div>
+              ) : (
+                <Select
+                  value={walletId}
+                  onValueChange={setWalletId}
+                  required
+                >
+                  <SelectTrigger className="col-span-3" id="wallet">
+                    <SelectValue placeholder="Selecione uma carteira" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wallets.map((wallet) => (
+                      <SelectItem key={wallet.id} value={wallet.id}>
+                        {wallet.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="date" className="text-right">
@@ -205,10 +314,18 @@ export const AddTransactionDialog = ({
             <Button
               type="submit"
               className={cn(
-                type === "despesa" ? "bg-vermelho hover:bg-vermelho-dark" : "bg-verde hover:bg-verde-dark"
+                type === "despesa" ? "bg-vermelho hover:bg-vermelho/90" : "bg-verde hover:bg-verde/90"
               )}
+              disabled={isSubmitting}
             >
-              Salvar
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar"
+              )}
             </Button>
           </DialogFooter>
         </form>

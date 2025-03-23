@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,15 +11,66 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Plus, ArrowDownCircle } from "lucide-react";
+import { CalendarIcon, Plus, ArrowDownCircle, Loader2 } from "lucide-react";
 import { ExpenseByCategoryChart } from "../analytics/ExpenseByCategoryChart";
 import { cn } from "@/lib/utils";
 import { AddTransactionDialog } from "../dashboard/AddTransactionDialog";
 import { TransactionTable } from "../analytics/TransactionTable";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ExpensesPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [dailyAverage, setDailyAverage] = useState(0);
+  const [recurrentExpenses, setRecurrentExpenses] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExpenseSummary = async () => {
+      try {
+        setIsLoading(true);
+        const currentMonth = format(selectedDate, 'MM');
+        const currentYear = format(selectedDate, 'yyyy');
+        const startDate = `${currentYear}-${currentMonth}-01`;
+        const lastDay = new Date(parseInt(currentYear), parseInt(currentMonth), 0).getDate();
+        const endDate = `${currentYear}-${currentMonth}-${lastDay}`;
+        
+        // Fetch all expenses for the month
+        const { data: expenseData, error: expenseError } = await supabase
+          .from('transactions')
+          .select('amount, recurrent')
+          .eq('type', 'expense')
+          .gte('date', startDate)
+          .lte('date', endDate);
+        
+        if (expenseError) {
+          console.error('Error fetching expense data:', expenseError);
+          return;
+        }
+        
+        // Calculate total expenses
+        const totalAmount = expenseData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        setTotalExpenses(totalAmount);
+        
+        // Calculate daily average
+        setDailyAverage(totalAmount / lastDay);
+        
+        // Calculate recurrent expenses
+        const recurrentAmount = expenseData
+          ?.filter(item => item.recurrent)
+          .reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        setRecurrentExpenses(recurrentAmount);
+        
+      } catch (error) {
+        console.error('Error calculating expense summary:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchExpenseSummary();
+  }, [selectedDate, isAddExpenseOpen]);
 
   return (
     <div className="space-y-8 pb-16 md:pb-8">
@@ -50,7 +101,7 @@ export const ExpensesPage = () => {
           </Popover>
           <Button 
             onClick={() => setIsAddExpenseOpen(true)}
-            className="bg-vermelho hover:bg-vermelho-dark"
+            className="bg-vermelho hover:bg-vermelho/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nova Despesa
@@ -59,52 +110,81 @@ export const ExpensesPage = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total do Mês</CardTitle>
             <ArrowDownCircle className="h-4 w-4 text-vermelho" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-vermelho">R$ 3.750,00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              -5% em relação ao mês anterior
-            </p>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-vermelho">R$ {totalExpenses.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {format(selectedDate, "MMMM yyyy", { locale: ptBR })}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Média Diária</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 125,00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              31 dias no mês atual
-            </p>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">R$ {dailyAverage.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate()} dias no mês
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Despesas Recorrentes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 1.300,00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              35% do total de despesas
-            </p>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">R$ {recurrentExpenses.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {totalExpenses > 0 
+                    ? `${((recurrentExpenses / totalExpenses) * 100).toFixed(0)}% do total de despesas`
+                    : "0% do total de despesas"}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader>
             <CardTitle>Por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
-            <ExpenseByCategoryChart />
+            <ExpenseByCategoryChart selectedDate={selectedDate} />
           </CardContent>
         </Card>
-        <Card className="glass card-hover md:col-span-2">
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Todas as Despesas</CardTitle>
           </CardHeader>

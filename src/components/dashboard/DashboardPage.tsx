@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,19 +11,78 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExpenseSummary } from "./ExpenseSummary";
 import { TransactionList } from "./TransactionList";
 import { WalletSummary } from "./WalletSummary";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, Loader2 } from "lucide-react";
 import { AddTransactionDialog } from "./AddTransactionDialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const DashboardPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<"despesa" | "receita">("despesa");
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [monthlyBalance, setMonthlyBalance] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleAddTransaction = (type: "despesa" | "receita") => {
     setTransactionType(type);
     setIsAddTransactionOpen(true);
   };
+
+  useEffect(() => {
+    const fetchMonthlySummary = async () => {
+      try {
+        setIsLoading(true);
+        const currentMonth = format(selectedDate, 'MM');
+        const currentYear = format(selectedDate, 'yyyy');
+        const startDate = `${currentYear}-${currentMonth}-01`;
+        const lastDay = new Date(parseInt(currentYear), parseInt(currentMonth), 0).getDate();
+        const endDate = `${currentYear}-${currentMonth}-${lastDay}`;
+
+        // Fetch income for the month
+        const { data: incomeData, error: incomeError } = await supabase
+          .from('transactions')
+          .select('amount')
+          .eq('type', 'income')
+          .gte('date', startDate)
+          .lte('date', endDate);
+
+        // Fetch expenses for the month
+        const { data: expenseData, error: expenseError } = await supabase
+          .from('transactions')
+          .select('amount')
+          .eq('type', 'expense')
+          .gte('date', startDate)
+          .lte('date', endDate);
+
+        if (incomeError) {
+          console.error('Error fetching income data:', incomeError);
+        } else {
+          const totalIncome = incomeData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          setMonthlyIncome(totalIncome);
+        }
+
+        if (expenseError) {
+          console.error('Error fetching expense data:', expenseError);
+        } else {
+          const totalExpenses = expenseData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          setMonthlyExpenses(totalExpenses);
+        }
+
+        // Calculate balance
+        const income = incomeData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        const expenses = expenseData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        setMonthlyBalance(income - expenses);
+      } catch (error) {
+        console.error('Error calculating monthly summary:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMonthlySummary();
+  }, [selectedDate, isAddTransactionOpen]);
 
   return (
     <div className="space-y-8 pb-16 md:pb-8">
@@ -56,51 +115,84 @@ export const DashboardPage = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Balanço Mensal</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 1.250,00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              +20% em relação ao mês anterior
-            </p>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">R$ {monthlyBalance.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {monthlyBalance >= 0 
+                    ? "Você está com saldo positivo" 
+                    : "Você está com saldo negativo"}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Despesas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-vermelho">R$ 3.750,00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              -5% em relação ao mês anterior
-            </p>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-vermelho">R$ {monthlyExpenses.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()
+                    ? "Mês atual"
+                    : format(selectedDate, "MMMM yyyy", { locale: ptBR })}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
-        <Card className="glass card-hover">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-verde">R$ 5.000,00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              +10% em relação ao mês anterior
-            </p>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-verde">R$ {monthlyIncome.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()
+                    ? "Mês atual"
+                    : format(selectedDate, "MMMM yyyy", { locale: ptBR })}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-7">
-        <Card className="glass card-hover col-span-4">
+        <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Resumo de Gastos</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ExpenseSummary />
+            <ExpenseSummary selectedDate={selectedDate} />
           </CardContent>
         </Card>
-        <Card className="glass card-hover col-span-3">
+        <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Carteiras</CardTitle>
           </CardHeader>
@@ -110,7 +202,7 @@ export const DashboardPage = () => {
         </Card>
       </div>
 
-      <Card className="glass card-hover">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Transações Recentes</CardTitle>
           <div className="flex space-x-2">

@@ -22,7 +22,6 @@ const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [theme, setTheme] = useState("dark");
 
   useEffect(() => {
     // Set dark theme
