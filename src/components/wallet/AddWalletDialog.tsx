@@ -18,36 +18,80 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddWalletDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export const AddWalletDialog = ({
   open,
   onOpenChange,
+  onSuccess
 }: AddWalletDialogProps) => {
   const [walletType, setWalletType] = useState<
     "credit-card" | "debit-card" | "cash"
   >("credit-card");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [balance, setBalance] = useState("");
+  const [limit, setLimit] = useState("");
+  const [color, setColor] = useState("#E63946");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const resetForm = () => {
+    setWalletType("credit-card");
+    setName("");
+    setCardNumber("");
+    setBalance("");
+    setLimit("");
+    setColor("#E63946");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Aqui seria a lógica para salvar a carteira no Supabase
-    toast({
-      title: "Carteira adicionada",
-      description: "Sua nova carteira foi registrada com sucesso.",
-    });
-    
-    onOpenChange(false);
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .insert({
+          name: name,
+          balance: parseFloat(balance) || 0,
+          limit_amount: walletType === "credit-card" ? (parseFloat(limit) || 0) : null,
+          type: walletType,
+          color: color,
+          card_number: walletType !== "cash" ? cardNumber : null,
+        })
+        .select();
+      
+      if (error) {
+        console.error('Error adding wallet:', error);
+        toast.error("Erro ao adicionar carteira", {
+          description: error.message,
+        });
+      } else {
+        toast.success("Carteira adicionada", {
+          description: "Sua nova carteira foi registrada com sucesso.",
+        });
+        resetForm();
+        onOpenChange(false);
+        if (onSuccess) onSuccess();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Erro ao adicionar carteira");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] glass animate-scale-in">
+      <DialogContent className="sm:max-w-[425px] glass">
         <DialogHeader>
           <DialogTitle>Adicionar Nova Carteira</DialogTitle>
           <DialogDescription>
@@ -65,6 +109,8 @@ export const AddWalletDialog = ({
                 placeholder="Ex: Nubank, Itaú, Dinheiro..."
                 className="col-span-3"
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -98,6 +144,8 @@ export const AddWalletDialog = ({
                   id="cardNumber"
                   placeholder="**** **** **** ****"
                   className="col-span-3"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
                 />
               </div>
             )}
@@ -114,6 +162,8 @@ export const AddWalletDialog = ({
                 min="0"
                 className="col-span-3"
                 required
+                value={balance}
+                onChange={(e) => setBalance(e.target.value)}
               />
             </div>
 
@@ -130,6 +180,8 @@ export const AddWalletDialog = ({
                   min="0"
                   className="col-span-3"
                   required
+                  value={limit}
+                  onChange={(e) => setLimit(e.target.value)}
                 />
               </div>
             )}
@@ -139,17 +191,26 @@ export const AddWalletDialog = ({
                 Cor
               </Label>
               <div className="col-span-3 flex space-x-2">
-                <Input id="color" type="color" className="w-12 h-10 p-1" defaultValue="#E63946" />
+                <Input 
+                  id="color" 
+                  type="color" 
+                  className="w-12 h-10 p-1" 
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                />
                 <Input
                   placeholder="Código de cor (Ex: #E63946)"
                   className="flex-1"
-                  defaultValue="#E63946"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Salvando..." : "Salvar"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
