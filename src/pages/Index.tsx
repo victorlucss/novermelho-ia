@@ -1,13 +1,20 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect to demo page
-    navigate("/demo");
+    // Check if user is logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/");
+      } else {
+        navigate("/login");
+      }
+    });
   }, [navigate]);
 
   return (

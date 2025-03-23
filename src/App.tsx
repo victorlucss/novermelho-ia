@@ -4,6 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "./integrations/supabase/client";
+import { User, Session } from '@supabase/supabase-js';
 import { AppLayout } from "./components/layout/AppLayout";
 import { LoginPage } from "./components/auth/LoginPage";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
@@ -16,9 +19,39 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // For demonstration purposes, setting a dummy authentication state.
-  // In a real app, this would be handled through Supabase authentication.
-  const isAuthenticated = false;
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Carregando...</h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -28,13 +61,16 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route 
+              path="/login" 
+              element={user ? <Navigate to="/" replace /> : <LoginPage />} 
+            />
 
             {/* Protected routes */}
             <Route 
               path="/"
               element={
-                isAuthenticated ? (
+                user ? (
                   <AppLayout>
                     <DashboardPage />
                   </AppLayout>
@@ -47,7 +83,7 @@ const App = () => {
             <Route 
               path="/despesas"
               element={
-                isAuthenticated ? (
+                user ? (
                   <AppLayout>
                     <ExpensesPage />
                   </AppLayout>
@@ -60,7 +96,7 @@ const App = () => {
             <Route 
               path="/receitas"
               element={
-                isAuthenticated ? (
+                user ? (
                   <AppLayout>
                     <IncomePage />
                   </AppLayout>
@@ -73,7 +109,7 @@ const App = () => {
             <Route 
               path="/analise"
               element={
-                isAuthenticated ? (
+                user ? (
                   <AppLayout>
                     <AnalyticsPage />
                   </AppLayout>
@@ -86,7 +122,7 @@ const App = () => {
             <Route 
               path="/carteiras"
               element={
-                isAuthenticated ? (
+                user ? (
                   <AppLayout>
                     <WalletPage />
                   </AppLayout>
