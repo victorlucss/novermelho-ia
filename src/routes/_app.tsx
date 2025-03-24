@@ -1,19 +1,19 @@
 
 import React from "react";
 import { Outlet, useLocation, Link, useNavigate } from "@remix-run/react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { MainNavigation } from "@/components/layout/MainNavigation";
-import { MobileNavigation } from "@/components/layout/MobileNavigation";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { SidebarProvider } from "~/components/ui/sidebar";
+import { MainNavigation } from "~/components/layout/MainNavigation";
+import { MobileNavigation } from "~/components/layout/MobileNavigation";
+import { useIsMobile } from "~/hooks/use-mobile";
+import { supabase } from "~/integrations/supabase/client";
 import { useEffect } from "react";
 
 export default function AppLayout() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   useEffect(() => {
     // Check for authentication
     const checkAuth = async () => {
@@ -22,7 +22,7 @@ export default function AppLayout() {
         navigate("/login", { replace: true });
       }
     };
-    
+
     checkAuth();
   }, [navigate, location]);
 

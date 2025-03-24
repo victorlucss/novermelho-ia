@@ -3,7 +3,7 @@ export default {
   ignoredRouteFiles: ["**/.*"],
   serverModuleFormat: "esm",
   // Point to the root app directory
-  appDirectory: "app",
+  appDirectory: "src/app",
   assetsBuildDirectory: "public/build",
   publicPath: "/build/",
   serverBuildPath: "build/index.js",

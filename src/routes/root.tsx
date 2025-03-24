@@ -10,9 +10,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "~/components/ui/toaster";
+import { Toaster as Sonner } from "~/components/ui/sonner";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "../integrations/supabase/client";
@@ -69,7 +69,7 @@ function Document({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
-    
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -110,7 +110,7 @@ function Document({ children }: { children: React.ReactNode }) {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  
+
   if (isRouteErrorResponse(error)) {
     return (
       <html lang="en" className="dark">

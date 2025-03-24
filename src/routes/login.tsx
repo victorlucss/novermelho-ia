@@ -1,12 +1,12 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
-import { LoginPage } from "@/components/auth/LoginPage";
-import { supabase } from "@/integrations/supabase/client";
+import { LoginPage } from "~/components/auth/LoginPage";
+import { supabase } from "~/integrations/supabase/client";
 
 export default function Login() {
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     // Check for authentication
     const checkAuth = async () => {
@@ -15,9 +15,9 @@ export default function Login() {
         navigate("/", { replace: true });
       }
     };
-    
+
     checkAuth();
   }, [navigate]);
-  
+
   return <LoginPage />;
 }
