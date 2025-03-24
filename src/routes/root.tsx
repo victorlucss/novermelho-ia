@@ -15,9 +15,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { supabase } from "./integrations/supabase/client";
+import { supabase } from "../integrations/supabase/client";
 import type { User, Session } from '@supabase/supabase-js';
-import styles from "./index.css";
+import styles from "../index.css";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles as unknown as string },

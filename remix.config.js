@@ -3,7 +3,7 @@
 export default {
   ignoredRouteFiles: ["**/.*"],
   serverModuleFormat: "esm",
-  // Add any custom configurations needed for Remix
+  // Set the correct app source directory
   appDirectory: "src",
   assetsBuildDirectory: "public/build",
   publicPath: "/build/",
