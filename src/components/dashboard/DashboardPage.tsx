@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -81,20 +80,20 @@ export const DashboardPage = () => {
         if (incomeError) {
           console.error('Error fetching income data:', incomeError);
         } else {
-          const totalIncome = incomeData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          const totalIncome = incomeData?.reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
           setMonthlyIncome(totalIncome);
         }
 
         if (expenseError) {
           console.error('Error fetching expense data:', expenseError);
         } else {
-          const totalExpenses = expenseData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          const totalExpenses = expenseData?.reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
           setMonthlyExpenses(totalExpenses);
         }
 
         // Calculate balance
-        const income = incomeData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
-        const expenses = expenseData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        const income = incomeData?.reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
+        const expenses = expenseData?.reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
         setMonthlyBalance(income - expenses);
       } catch (error) {
         console.error('Error calculating monthly summary:', error);

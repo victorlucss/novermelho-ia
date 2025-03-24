@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { format } from "date-fns";
@@ -71,7 +70,7 @@ export const ExpenseSummary = ({ selectedDate = new Date() }: ExpenseSummaryProp
         
         data.forEach((transaction) => {
           const currentAmount = categoryMap.get(transaction.category) || 0;
-          categoryMap.set(transaction.category, currentAmount + parseFloat(transaction.amount));
+          categoryMap.set(transaction.category, currentAmount + parseFloat(String(transaction.amount)));
         });
         
         // Convert map to array for chart

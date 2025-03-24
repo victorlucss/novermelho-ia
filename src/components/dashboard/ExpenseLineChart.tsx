@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { Card } from "@/components/ui/card";
@@ -50,7 +49,7 @@ export const ExpenseLineChart = () => {
         // Aggregate transaction amounts by date
         const expensesByDate = transactions.reduce<Record<string, number>>((acc, transaction) => {
           const date = transaction.date;
-          const amount = parseFloat(transaction.amount);
+          const amount = parseFloat(String(transaction.amount));
           
           if (!acc[date]) {
             acc[date] = 0;

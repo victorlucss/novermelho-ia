@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -50,7 +49,7 @@ export const ExpensesPage = () => {
         }
         
         // Calculate total expenses
-        const totalAmount = expenseData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        const totalAmount = expenseData?.reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
         setTotalExpenses(totalAmount);
         
         // Calculate daily average
@@ -59,7 +58,7 @@ export const ExpensesPage = () => {
         // Calculate recurrent expenses
         const recurrentAmount = expenseData
           ?.filter(item => item.recurrent)
-          .reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          .reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
         setRecurrentExpenses(recurrentAmount);
         
       } catch (error) {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -50,19 +49,19 @@ export const IncomePage = () => {
         }
         
         // Calculate total income
-        const totalAmount = incomeData?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+        const totalAmount = incomeData?.reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
         setTotalIncome(totalAmount);
         
         // Calculate fixed income (recurrent)
         const recurrentAmount = incomeData
           ?.filter(item => item.recurrent)
-          .reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          .reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
         setFixedIncome(recurrentAmount);
         
         // Calculate extra income (non-recurrent)
         const extraAmount = incomeData
           ?.filter(item => !item.recurrent)
-          .reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
+          .reduce((sum, item) => sum + parseFloat(String(item.amount)), 0) || 0;
         setExtraIncome(extraAmount);
         
       } catch (error) {
