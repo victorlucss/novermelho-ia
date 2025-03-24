@@ -1,17 +1,10 @@
 
 import { Outlet } from "@remix-run/react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
+// This component is only used for development with Vite
+// For production, use the root.tsx file
 const App = () => {
-  return (
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Outlet />
-    </TooltipProvider>
-  );
+  return <Outlet />;
 };
 
 export default App;
