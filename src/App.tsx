@@ -3,21 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Outlet } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { User, Session } from '@supabase/supabase-js';
-import { AppLayout } from "./components/layout/AppLayout";
-import { LoginPage } from "./components/auth/LoginPage";
-import { DashboardPage } from "./components/dashboard/DashboardPage";
-import { ExpensesPage } from "./components/expenses/ExpensesPage";
-import { IncomePage } from "./components/income/IncomePage";
-import { AnalyticsPage } from "./components/analytics/AnalyticsPage";
-import { WalletPage } from "./components/wallet/WalletPage";
-import { ProfilePage } from "./components/profile/ProfilePage";
-import { BudgetPage } from "./components/budget/BudgetPage";
-import NotFound from "./pages/NotFound";
 
+// Create a client for React Query
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -63,120 +54,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route 
-              path="/login" 
-              element={user ? <Navigate to="/" replace /> : <LoginPage />} 
-            />
-
-            {/* Protected routes */}
-            <Route 
-              path="/"
-              element={
-                user ? (
-                  <AppLayout>
-                    <DashboardPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route 
-              path="/despesas"
-              element={
-                user ? (
-                  <AppLayout>
-                    <ExpensesPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route 
-              path="/receitas"
-              element={
-                user ? (
-                  <AppLayout>
-                    <IncomePage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route 
-              path="/analise"
-              element={
-                user ? (
-                  <AppLayout>
-                    <AnalyticsPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route 
-              path="/carteiras"
-              element={
-                user ? (
-                  <AppLayout>
-                    <WalletPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route 
-              path="/orcamentos"
-              element={
-                user ? (
-                  <AppLayout>
-                    <BudgetPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route 
-              path="/perfil"
-              element={
-                user ? (
-                  <AppLayout>
-                    <ProfilePage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            {/* For demo purposes, we'll make the dashboard accessible */}
-            <Route 
-              path="/demo"
-              element={
-                <AppLayout>
-                  <DashboardPage />
-                </AppLayout>
-              }
-            />
-
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <Outlet />
       </TooltipProvider>
     </QueryClientProvider>
   );

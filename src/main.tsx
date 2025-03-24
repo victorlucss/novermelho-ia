@@ -1,18 +1,14 @@
 
-// This file is now obsolete as Remix handles routing and rendering
-// It's kept for compatibility but no longer used as the main entry point
+import "./index.css";
+import { createBrowserRouter, RouterProvider } from "@remix-run/react";
+import { startTransition } from "react";
+import { createRoot } from "react-dom/client";
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+// Import the entry point 
+import { RemixBrowser } from "@remix-run/react";
 
-// This code is no longer executed as Remix takes over entry points
-if (import.meta.env.DEV) {
-  console.log("Development mode: main.tsx is not used as Remix takes over entry points");
-  
-  // Only render in development for backwards compatibility
-  const root = document.getElementById("root");
-  if (root) {
-    createRoot(root).render(<App />);
-  }
-}
+startTransition(() => {
+  createRoot(document.getElementById("root")!).render(
+    <RemixBrowser />
+  );
+});
