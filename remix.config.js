@@ -3,7 +3,7 @@
 export default {
   ignoredRouteFiles: ["**/.*"],
   serverModuleFormat: "esm",
-  // Set the correct app source directory
+  // Correctly set the app directory
   appDirectory: "src",
   assetsBuildDirectory: "public/build",
   publicPath: "/build/",
@@ -13,10 +13,5 @@ export default {
     v2_meta: true,
     v2_normalizeFormMethod: true,
     v2_routeConvention: true,
-  },
-  routes(defineRoutes) {
-    return defineRoutes(route => {
-      // Define your routes manually if needed
-    });
   },
 };

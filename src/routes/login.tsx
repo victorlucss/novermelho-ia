@@ -1,9 +1,8 @@
 
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { LoginPage } from "@/components/auth/LoginPage";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
+import { LoginPage } from "@/components/auth/LoginPage";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
   const navigate = useNavigate();

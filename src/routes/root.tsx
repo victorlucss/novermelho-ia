@@ -54,7 +54,6 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
-        <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
       </body>
     </html>
   );
