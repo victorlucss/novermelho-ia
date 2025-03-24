@@ -1,3 +1,4 @@
+
 import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
@@ -99,9 +100,9 @@ function Document({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        {children}
         <Toaster />
         <Sonner />
-        {children}
       </TooltipProvider>
     </QueryClientProvider>
   );
