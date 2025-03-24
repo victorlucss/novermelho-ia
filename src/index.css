@@ -1,0 +1,111 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 222 14% 7%;
+    --foreground: 193 36% 91%;
+
+    --card: 216 14% 11%;
+    --card-foreground: 193 36% 91%;
+
+    --popover: 216 14% 11%;
+    --popover-foreground: 193 36% 91%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 32% 70%;
+    --secondary-foreground: 222 14% 7%;
+
+    --muted: 217 22% 33%;
+    --muted-foreground: 214 20% 69%;
+
+    --accent: 199 89% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 22% 26%;
+    --input: 217 22% 26%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 222 17% 10%;
+    --sidebar-foreground: 193 36% 91%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 199 89% 53%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 22% 26%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-lg border border-white/10 shadow-lg;
+  }
+
+  /* Form elements styling */
+  input, select, textarea {
+    @apply focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
+  }
+}
+
+/* Custom color classes */
+.text-income {
+  color: #2563EB; /* Royal Blue */
+}
+
+.text-expense {
+  color: #EF4444; /* Vivid Red */
+}
+
+.text-warning {
+  color: #FACC15; /* Warm Yellow */
+}
+
+.text-info {
+  color: #60A5FA; /* Sky Blue */
+}
+
+.text-success {
+  color: #22D3EE; /* Aqua Cyan */
+}
+
+.bg-income {
+  background-color: #2563EB;
+}
+
+.bg-expense {
+  background-color: #EF4444;
+}
+
+.bg-warning {
+  background-color: #FACC15;
+}
+
+.bg-info {
+  background-color: #60A5FA;
+}
+
+.bg-success {
+  background-color: #22D3EE;
+}
