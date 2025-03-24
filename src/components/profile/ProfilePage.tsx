@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -106,17 +105,6 @@ export const ProfilePage = () => {
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
         const fileName = `${profile.id}-${Math.random()}.${fileExt}`;
-        
-        // Check if storage bucket exists
-        const { data: buckets } = await supabase.storage.listBuckets();
-        const avatarsBucket = buckets?.find(b => b.name === 'avatars');
-        
-        if (!avatarsBucket) {
-          // Create bucket if it doesn't exist
-          await supabase.storage.createBucket('avatars', {
-            public: true,
-          });
-        }
         
         // Upload the file
         const { data, error } = await supabase.storage
