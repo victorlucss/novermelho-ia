@@ -17,10 +17,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "../integrations/supabase/client";
 import type { User, Session } from '@supabase/supabase-js';
-import styles from "../index.css";
+
+// Import CSS properly
+import "../index.css";
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
+  { rel: "stylesheet", href: "/build/index.css" },
 ];
 
 export const meta: MetaFunction = () => {
