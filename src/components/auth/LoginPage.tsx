@@ -1,14 +1,12 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Mail, Lock, User, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const LoginPage = () => {
@@ -18,25 +16,26 @@ export const LoginPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo de volta ao NoVermelho!",
       });
-      
+
       navigate("/");
     } catch (error: any) {
       setError(error.message || "Falha ao fazer login. Tente novamente.");
@@ -54,21 +53,21 @@ export const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    
+
     if (password !== confirmPassword) {
       setError("As senhas não coincidem");
       setIsLoading(false);
       return;
     }
-    
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Cadastro realizado com sucesso",
         description: "Verifique seu email para confirmar sua conta.",
@@ -85,40 +84,62 @@ export const LoginPage = () => {
     }
   };
 
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    setError(null);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-accent/50">
-      <div className="w-full max-w-md animate-scale-in">
-        <Card className="glass border-0">
-          <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-6">
-              <div className="h-14 w-14 rounded-full bg-vermelho flex items-center justify-center">
-                <span className="text-white text-2xl font-bold">NV</span>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-accent/20 to-background bg-[url('/images/finance-pattern.svg')] bg-opacity-5">
+      <div className="w-full max-w-md animate-fade-in-up">
+        <Card className="glass border-0 shadow-2xl backdrop-blur-sm overflow-hidden">
+          <div className="absolute top-4 right-4 z-10">
+            <button
+              onClick={toggleAuthMode}
+              className="text-sm text-vermelho hover:text-red-700 flex items-center gap-1 transition-all duration-300"
+            >
+              {isLogin ? (
+                <>
+                  Criar conta <ChevronRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <ChevronLeft className="h-4 w-4" /> Voltar para login
+                </>
+              )}
+            </button>
+          </div>
+
+          <CardHeader className="space-y-3 pt-10 pb-8">
+            <div className="flex justify-center mb-8">
+              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-vermelho to-red-700 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <span className="text-white text-3xl font-bold">NV</span>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center">NoVermelho</CardTitle>
-            <CardDescription className="text-center">
-              Gerencie suas despesas e fique no controle das suas finanças
+            <CardTitle className="text-3xl font-bold text-center text-vermelho">
+              {isLogin ? "Bem-vindo de volta" : "Crie sua conta"}
+            </CardTitle>
+            <CardDescription className="text-center text-base px-6">
+              {isLogin
+                ? "Entre para gerenciar suas finanças com o NoVermelho"
+                : "Comece a controlar suas despesas hoje mesmo"}
             </CardDescription>
           </CardHeader>
-          
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register">Cadastrar</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={handleSignIn}>
-                <CardContent className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+
+          {isLogin ? (
+            <form onSubmit={handleSignIn}>
+              <CardContent className="space-y-6 px-8">
+                {error && (
+                  <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-800 animate-pulse">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
@@ -126,16 +147,20 @@ export const LoginPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="pl-12 py-6 rounded-xl border-muted focus:border-vermelho focus:ring-vermelho transition-all text-base"
                     />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Senha</Label>
-                      <a href="#" className="text-sm text-blue-500 hover:underline">
-                        Esqueceu a senha?
-                      </a>
-                    </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
+                    <a href="#" className="text-sm text-vermelho hover:text-red-700 transition-all">
+                      Esqueceu a senha?
+                    </a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="password"
                       type="password"
@@ -143,46 +168,49 @@ export const LoginPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="pl-12 py-6 rounded-xl border-muted focus:border-vermelho focus:ring-vermelho transition-all text-base"
                     />
                   </div>
-                </CardContent>
-                
-                <CardFooter className="flex flex-col space-y-4">
-                  <Button 
-                    type="submit" 
-                    className="w-full font-medium" 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Entrando..." : "Entrar"}
-                  </Button>
-                  
-                  <div className="text-center text-sm text-muted-foreground">
-                    Ao continuar, você concorda com nossos{" "}
-                    <a href="#" className="underline underline-offset-4 hover:text-primary">
-                      Termos de Serviço
-                    </a>{" "}
-                    e{" "}
-                    <a href="#" className="underline underline-offset-4 hover:text-primary">
-                      Política de Privacidade
-                    </a>
-                    .
-                  </div>
-                </CardFooter>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <form onSubmit={handleSignUp}>
-                <CardContent className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email-register">Email</Label>
+                </div>
+              </CardContent>
+
+              <CardFooter className="flex flex-col space-y-6 px-8 pb-10">
+                <Button
+                  type="submit"
+                  className="w-full font-medium py-7 bg-vermelho hover:bg-red-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-base shadow-md hover:shadow-lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Entrando..." : "Entrar na minha conta"}
+                  {!isLoading && <ArrowRight className="h-5 w-5" />}
+                </Button>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  Ao continuar, você concorda com nossos{" "}
+                  <a href="https://novermelho.vercel.app/terms" className="underline underline-offset-4 hover:text-vermelho transition-colors">
+                    Termos de Serviço
+                  </a>{" "}
+                  e{" "}
+                  <a href="https://novermelho.vercel.app/policy" className="underline underline-offset-4 hover:text-vermelho transition-colors">
+                    Política de Privacidade
+                  </a>
+                  .
+                </div>
+              </CardFooter>
+            </form>
+          ) : (
+            <form onSubmit={handleSignUp}>
+              <CardContent className="space-y-6 px-8">
+                {error && (
+                  <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-800 animate-pulse">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="space-y-3">
+                  <Label htmlFor="email-register" className="text-sm font-medium">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="email-register"
                       type="email"
@@ -190,11 +218,15 @@ export const LoginPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="pl-12 py-6 rounded-xl border-muted focus:border-vermelho focus:ring-vermelho transition-all text-base"
                     />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password-register">Senha</Label>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="password-register" className="text-sm font-medium">Senha</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="password-register"
                       type="password"
@@ -202,11 +234,15 @@ export const LoginPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="pl-12 py-6 rounded-xl border-muted focus:border-vermelho focus:ring-vermelho transition-all text-base"
                     />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirmar Senha</Label>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="confirm-password" className="text-sm font-medium">Confirmar Senha</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="confirm-password"
                       type="password"
@@ -214,34 +250,36 @@ export const LoginPage = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
+                      className="pl-12 py-6 rounded-xl border-muted focus:border-vermelho focus:ring-vermelho transition-all text-base"
                     />
                   </div>
-                </CardContent>
-                
-                <CardFooter className="flex flex-col space-y-4">
-                  <Button 
-                    type="submit" 
-                    className="w-full font-medium" 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Criando conta..." : "Criar conta"}
-                  </Button>
-                  
-                  <div className="text-center text-sm text-muted-foreground">
-                    Ao continuar, você concorda com nossos{" "}
-                    <a href="#" className="underline underline-offset-4 hover:text-primary">
-                      Termos de Serviço
-                    </a>{" "}
-                    e{" "}
-                    <a href="#" className="underline underline-offset-4 hover:text-primary">
-                      Política de Privacidade
-                    </a>
-                    .
-                  </div>
-                </CardFooter>
-              </form>
-            </TabsContent>
-          </Tabs>
+                </div>
+              </CardContent>
+
+              <CardFooter className="flex flex-col space-y-6 px-8 pb-10">
+                <Button
+                  type="submit"
+                  className="w-full font-medium py-7 bg-vermelho hover:bg-red-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-base shadow-md hover:shadow-lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Criando conta..." : "Criar minha conta"}
+                  {!isLoading && <User className="h-5 w-5" />}
+                </Button>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  Ao continuar, você concorda com nossos{" "}
+                  <a href="https://novermelho.vercel.app/terms" className="underline underline-offset-4 hover:text-vermelho transition-colors">
+                    Termos de Serviço
+                  </a>{" "}
+                  e{" "}
+                  <a href="https://novermelho.vercel.app/terms" className="underline underline-offset-4 hover:text-vermelho transition-colors">
+                    Política de Privacidade
+                  </a>
+                  .
+                </div>
+              </CardFooter>
+            </form>
+          )}
         </Card>
       </div>
     </div>
