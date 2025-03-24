@@ -1,3 +1,4 @@
+
 import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
@@ -19,7 +20,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import styles from "./index.css";
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
+  { rel: "stylesheet", href: styles as unknown as string },
 ];
 
 export const meta: MetaFunction = () => {

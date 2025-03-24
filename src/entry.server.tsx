@@ -51,7 +51,7 @@ function handleBotRequest(
           responseHeaders.set("Content-Type", "text/html");
 
           resolve(
-            new Response(body, {
+            new Response(String(body), {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
             })
@@ -93,7 +93,7 @@ function handleBrowserRequest(
           responseHeaders.set("Content-Type", "text/html");
 
           resolve(
-            new Response(body, {
+            new Response(String(body), {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
             })
