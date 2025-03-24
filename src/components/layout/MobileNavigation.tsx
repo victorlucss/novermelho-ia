@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "@remix-run/react";
 import { cn } from "@/lib/utils";
 import {
   Home,
