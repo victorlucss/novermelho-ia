@@ -1,5 +1,4 @@
-
-import { LinksFunction, MetaFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -16,13 +15,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
-import { User, Session } from '@supabase/supabase-js';
-import { cssBundleHref } from "@remix-run/css-bundle";
+import type { User, Session } from '@supabase/supabase-js';
 import styles from "./index.css";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
 export const meta: MetaFunction = () => {

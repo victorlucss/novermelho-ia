@@ -13,5 +13,10 @@ export default {
     v2_meta: true,
     v2_normalizeFormMethod: true,
     v2_routeConvention: true,
-  }
+  },
+  routes(defineRoutes) {
+    return defineRoutes(route => {
+      // Define your routes manually if needed
+    });
+  },
 };
