@@ -133,6 +133,12 @@ export const AddTransactionDialog = ({
     setIsSubmitting(true);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('transactions')
         .insert({
@@ -142,7 +148,8 @@ export const AddTransactionDialog = ({
           date: format(date, 'yyyy-MM-dd'),
           type: type === "despesa" ? "expense" : "income",
           recurrent: isRecurrent,
-          wallet_id: walletId
+          wallet_id: walletId,
+          user_id: user.id
         })
         .select();
       

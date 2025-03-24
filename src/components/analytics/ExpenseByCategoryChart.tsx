@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,20 +77,19 @@ export const ExpenseByCategoryChart = ({
           return;
         }
 
-        // Group by category
         const categoryMap = new Map<string, number>();
         
-        data.forEach((transaction) => {
+        data?.forEach((transaction) => {
           const currentAmount = categoryMap.get(transaction.category) || 0;
-          categoryMap.set(transaction.category, currentAmount + parseFloat(transaction.amount));
+          categoryMap.set(transaction.category, currentAmount + Number(transaction.amount));
         });
         
         // Convert map to array for chart
         const colors = isIncome ? incomeCategoryColors : expenseCategoryColors;
         const chartData = Array.from(categoryMap.entries()).map(([name, value]) => ({
           name,
-          value,
-          color: colors[name] || (isIncome ? "#2A9D8F" : "#1D3557") // Default color if category not in map
+          value: Number(value),
+          color: colors[name] || (isIncome ? "#2A9D8F" : "#1D3557")
         }));
         
         setData(chartData.length > 0 ? chartData : [{ 
@@ -105,7 +103,7 @@ export const ExpenseByCategoryChart = ({
         setIsLoading(false);
       }
     };
-
+    
     fetchDataByCategory();
   }, [isIncome, selectedDate]);
 

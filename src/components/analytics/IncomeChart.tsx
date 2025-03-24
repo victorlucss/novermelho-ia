@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   BarChart,
@@ -46,10 +45,9 @@ export const IncomeChart = () => {
       try {
         setIsLoading(true);
         const today = new Date();
-        const startDate = format(subMonths(today, 11), 'yyyy-MM-01'); // 12 months ago
+        const startDate = format(subMonths(today, 11), 'yyyy-MM-01');
         const endDate = format(today, 'yyyy-MM-dd');
         
-        // Fetch all income transactions for the last 12 months
         const { data: incomeData, error } = await supabase
           .from('transactions')
           .select('amount, date')
@@ -63,28 +61,24 @@ export const IncomeChart = () => {
           return;
         }
 
-        // Group by month
         const monthlyData = new Map<string, number>();
         
-        // Initialize all months
         for (let i = 0; i < 12; i++) {
           const date = subMonths(today, i);
           const monthYear = format(date, 'yyyy-MM');
           monthlyData.set(monthYear, 0);
         }
         
-        // Fill with actual data
-        incomeData.forEach((transaction) => {
-          const monthYear = transaction.date.substring(0, 7); // YYYY-MM
+        incomeData?.forEach((transaction) => {
+          const monthYear = transaction.date.substring(0, 7);
           const currentAmount = monthlyData.get(monthYear) || 0;
-          monthlyData.set(monthYear, currentAmount + parseFloat(transaction.amount));
+          monthlyData.set(monthYear, currentAmount + Number(transaction.amount));
         });
         
-        // Convert to chart data format and sort by date
         const chartData = Array.from(monthlyData.entries())
           .map(([monthYear, value]) => ({
             name: monthNames[parseInt(monthYear.split('-')[1]) - 1],
-            valor: value,
+            valor: Number(value),
             date: parseISO(`${monthYear}-01`)
           }))
           .sort((a, b) => a.date.getTime() - b.date.getTime());

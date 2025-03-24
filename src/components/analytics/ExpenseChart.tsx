@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   AreaChart,
@@ -53,10 +52,9 @@ export const ExpenseChart = () => {
       try {
         setIsLoading(true);
         const today = new Date();
-        const startDate = format(subMonths(today, 11), 'yyyy-MM-01'); // 12 months ago
+        const startDate = format(subMonths(today, 11), 'yyyy-MM-01');
         const endDate = format(today, 'yyyy-MM-dd');
         
-        // Fetch all transactions for the last 12 months
         const { data: transactions, error } = await supabase
           .from('transactions')
           .select('amount, type, date')
@@ -69,36 +67,32 @@ export const ExpenseChart = () => {
           return;
         }
 
-        // Group by month
         const monthlyData = new Map<string, { expenses: number, income: number }>();
         
-        // Initialize all months
         for (let i = 0; i < 12; i++) {
           const date = subMonths(today, i);
           const monthYear = format(date, 'yyyy-MM');
           monthlyData.set(monthYear, { expenses: 0, income: 0 });
         }
         
-        // Fill with actual data
-        transactions.forEach((transaction) => {
-          const monthYear = transaction.date.substring(0, 7); // YYYY-MM
+        transactions?.forEach((transaction) => {
+          const monthYear = transaction.date.substring(0, 7);
           const currentData = monthlyData.get(monthYear) || { expenses: 0, income: 0 };
           
           if (transaction.type === 'expense') {
-            currentData.expenses += parseFloat(transaction.amount);
+            currentData.expenses += Number(transaction.amount);
           } else {
-            currentData.income += parseFloat(transaction.amount);
+            currentData.income += Number(transaction.amount);
           }
           
           monthlyData.set(monthYear, currentData);
         });
         
-        // Convert to chart data format and sort by date
         const chartData = Array.from(monthlyData.entries())
           .map(([monthYear, values]) => ({
             name: monthNames[parseInt(monthYear.split('-')[1]) - 1],
-            despesas: values.expenses,
-            receitas: values.income,
+            despesas: Number(values.expenses),
+            receitas: Number(values.income),
             date: parseISO(`${monthYear}-01`)
           }))
           .sort((a, b) => a.date.getTime() - b.date.getTime());

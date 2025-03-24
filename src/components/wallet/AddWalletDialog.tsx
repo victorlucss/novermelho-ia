@@ -56,6 +56,12 @@ export const AddWalletDialog = ({
     setIsSubmitting(true);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('wallets')
         .insert({
@@ -65,6 +71,7 @@ export const AddWalletDialog = ({
           type: walletType,
           color: color,
           card_number: walletType !== "cash" ? cardNumber : null,
+          user_id: user.id
         })
         .select();
       
