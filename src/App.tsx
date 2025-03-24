@@ -28,7 +28,7 @@ const App = () => {
   useEffect(() => {
     // Set dark theme
     document.documentElement.classList.add("dark");
-    
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -61,18 +61,17 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
         <Sonner />
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-            <Route 
-              path="/login" 
-              element={user ? <Navigate to="/" replace /> : <LoginPage />} 
+            <Route
+              path="/login"
+              element={user ? <Navigate to="/" replace /> : <LoginPage />}
             />
 
             {/* Protected routes */}
-            <Route 
+            <Route
               path="/"
               element={
                 user ? (
@@ -85,7 +84,7 @@ const App = () => {
               }
             />
 
-            <Route 
+            <Route
               path="/despesas"
               element={
                 user ? (
@@ -98,7 +97,7 @@ const App = () => {
               }
             />
 
-            <Route 
+            <Route
               path="/receitas"
               element={
                 user ? (
@@ -111,7 +110,7 @@ const App = () => {
               }
             />
 
-            <Route 
+            <Route
               path="/analise"
               element={
                 user ? (
@@ -124,7 +123,7 @@ const App = () => {
               }
             />
 
-            <Route 
+            <Route
               path="/carteiras"
               element={
                 user ? (
@@ -137,7 +136,7 @@ const App = () => {
               }
             />
 
-            <Route 
+            <Route
               path="/orcamentos"
               element={
                 user ? (
@@ -150,7 +149,7 @@ const App = () => {
               }
             />
 
-            <Route 
+            <Route
               path="/perfil"
               element={
                 user ? (
@@ -164,7 +163,7 @@ const App = () => {
             />
 
             {/* For demo purposes, we'll make the dashboard accessible */}
-            <Route 
+            <Route
               path="/demo"
               element={
                 <AppLayout>

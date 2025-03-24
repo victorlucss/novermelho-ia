@@ -24,12 +24,15 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             <main className="flex-1 p-6 md:p-8 animate-fade-in">
               {children}
             </main>
+            <footer className="p-6 md:p-8 text-[10px] text-muted-foreground">
+              <a href="https://github.com/victorlucss/novermelho-ia" target="_blank" rel="noopener noreferrer">
+                Este site foi inteiramente desenvolvido por IA.
+              </a>
+            </footer>
           </ScrollArea>
           {isMobile && <MobileNavigation />}
         </div>
       </div>
-      <Toaster />
-      <Sonner position="top-right" />
     </SidebarProvider>
   );
 };

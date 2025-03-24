@@ -65,15 +65,13 @@ export const MainNavigation = () => {
     <Sidebar>
       <SidebarHeader className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center">
             <span className="text-white font-semibold">NV</span>
           </div>
-          <div className="font-semibold text-lg">NoVermelho</div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
