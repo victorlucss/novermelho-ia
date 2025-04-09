@@ -1,13 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-
-// Define a type for user notification settings
-interface UserNotificationSettings {
-  recurrent_expenses_alerts: boolean;
-  shared_expenses_alerts: boolean;
-  budget_alerts: boolean;
-  weekly_reports: boolean;
-}
+import { UserNotificationSettings } from "@/types/supabase";
 
 export class NotificationService {
   private static instance: NotificationService;
@@ -61,14 +54,14 @@ export class NotificationService {
       
       if (!user) return;
       
-      const { data: settings } = await supabase
-        .from('user_notification_settings' as any)
+      const { data, error } = await supabase
+        .from('user_notification_settings')
         .select('recurrent_expenses_alerts')
         .eq('user_id', user.id)
         .single();
       
       // Type assertion to access the property
-      const typedSettings = settings as unknown as UserNotificationSettings;
+      const typedSettings = data as unknown as UserNotificationSettings;
       if (!typedSettings || !typedSettings.recurrent_expenses_alerts) return;
       
       // Get today's date
@@ -76,15 +69,15 @@ export class NotificationService {
       const formattedDate = today.toISOString().split('T')[0];
       
       // Get recurrent expenses that are due today
-      const { data: recurrentExpenses, error } = await supabase
+      const { data: recurrentExpenses, error: expensesError } = await supabase
         .from('transactions')
         .select('name, amount, category')
         .eq('type', 'expense')
         .eq('recurrent', true)
         .eq('date', formattedDate);
       
-      if (error) {
-        console.error('Error fetching recurrent expenses:', error);
+      if (expensesError) {
+        console.error('Error fetching recurrent expenses:', expensesError);
         return;
       }
       
@@ -113,14 +106,14 @@ export class NotificationService {
       
       if (!user) return;
       
-      const { data: settings } = await supabase
-        .from('user_notification_settings' as any)
+      const { data, error } = await supabase
+        .from('user_notification_settings')
         .select('budget_alerts')
         .eq('user_id', user.id)
         .single();
       
       // Type assertion to access the property
-      const typedSettings = settings as unknown as UserNotificationSettings;
+      const typedSettings = data as unknown as UserNotificationSettings;
       if (!typedSettings || !typedSettings.budget_alerts) return;
       
       // Get current month date range

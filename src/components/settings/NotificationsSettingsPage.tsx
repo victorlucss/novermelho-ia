@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -8,19 +7,13 @@ import { toast } from "@/hooks/use-toast";
 import { Bell, Clock, Share2, Calendar, Info, Loader2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { UserNotificationSettings } from "@/types/supabase";
 
 interface NotificationSettings {
   recurrentExpenses: boolean;
   sharedExpenses: boolean;
   budgetAlerts: boolean;
   weeklyReports: boolean;
-}
-
-interface UserNotificationSettings {
-  recurrent_expenses_alerts: boolean;
-  shared_expenses_alerts: boolean;
-  budget_alerts: boolean;
-  weekly_reports: boolean;
 }
 
 export const NotificationsSettingsPage = () => {
@@ -138,7 +131,7 @@ export const NotificationsSettingsPage = () => {
             budget_alerts: settings.budgetAlerts,
             weekly_reports: settings.weeklyReports,
             updated_at: new Date().toISOString(),
-          } as any)
+          })
           .eq('user_id', user.id);
           
         if (updateError) throw updateError;
@@ -152,7 +145,7 @@ export const NotificationsSettingsPage = () => {
             shared_expenses_alerts: settings.sharedExpenses,
             budget_alerts: settings.budgetAlerts,
             weekly_reports: settings.weeklyReports,
-          } as any);
+          });
           
         if (insertError) throw insertError;
       }

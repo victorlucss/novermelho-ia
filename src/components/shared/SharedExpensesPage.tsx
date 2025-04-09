@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { SharedExpense, SharedExpenseParticipant } from "@/types/supabase";
 
 type User = {
   id: string;
@@ -18,7 +18,7 @@ type User = {
   full_name?: string;
 };
 
-type SharedExpense = {
+type SharedExpenseWithParticipants = {
   id: string;
   name: string;
   amount: number;
@@ -38,7 +38,7 @@ export const SharedExpensesPage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [userResults, setUserResults] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [sharedExpenses, setSharedExpenses] = useState<SharedExpense[]>([]);
+  const [sharedExpenses, setSharedExpenses] = useState<SharedExpenseWithParticipants[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   
@@ -67,7 +67,7 @@ export const SharedExpensesPage = () => {
         
         // Get all shared expenses where the current user is a participant
         const { data, error } = await supabase
-          .from('shared_expenses_participants' as any)
+          .from('shared_expenses_participants')
           .select(`
             shared_expense:shared_expenses(
               id,
@@ -88,23 +88,31 @@ export const SharedExpensesPage = () => {
         if (error) throw error;
         
         // Transform the data into the format we need
-        const formattedExpenses: SharedExpense[] = data.map((item: any) => {
-          const expense = item.shared_expense;
-          return {
-            id: expense.id,
-            name: expense.name,
-            amount: expense.amount,
-            category: expense.category,
-            date: expense.date,
-            created_by: expense.created_by,
-            participants: expense.participants.map((participant: any) => ({
-              user_id: participant.user_id,
-              paid: participant.paid,
-              email: participant.users?.email || '',
-              full_name: participant.users?.full_name
-            }))
-          };
-        });
+        const formattedExpenses: SharedExpenseWithParticipants[] = [];
+        
+        if (data) {
+          data.forEach((item: any) => {
+            if (item.shared_expense) {
+              const expense = item.shared_expense;
+              const participants = expense.participants?.map((participant: any) => ({
+                user_id: participant.user_id,
+                paid: participant.paid || false,
+                email: participant.users?.email || '',
+                full_name: participant.users?.full_name
+              })) || [];
+              
+              formattedExpenses.push({
+                id: expense.id,
+                name: expense.name,
+                amount: expense.amount,
+                category: expense.category,
+                date: expense.date,
+                created_by: expense.created_by,
+                participants
+              });
+            }
+          });
+        }
         
         setSharedExpenses(formattedExpenses);
       } catch (error) {
@@ -147,7 +155,9 @@ export const SharedExpensesPage = () => {
         
       if (error) throw error;
       
-      setUserResults(data || []);
+      if (data) {
+        setUserResults(data as User[]);
+      }
     } catch (error) {
       console.error('Error searching for users:', error);
       toast({
@@ -191,18 +201,20 @@ export const SharedExpensesPage = () => {
       
       // Create the shared expense
       const { data: expenseData, error: expenseError } = await supabase
-        .from('shared_expenses' as any)
+        .from('shared_expenses')
         .insert({
           name: expenseName,
           amount: parseFloat(expenseAmount),
           category: expenseCategory,
           date: expenseDate,
           created_by: user.id,
-        } as any)
+        })
         .select('id')
         .single();
         
       if (expenseError) throw expenseError;
+      
+      if (!expenseData) throw new Error("Falha ao criar despesa");
       
       // Add the current user as a participant
       const { data: userData } = await supabase
@@ -227,8 +239,8 @@ export const SharedExpensesPage = () => {
       
       // Insert all participants
       const { error: participantsError } = await supabase
-        .from('shared_expenses_participants' as any)
-        .insert(participants as any);
+        .from('shared_expenses_participants')
+        .insert(participants);
         
       if (participantsError) throw participantsError;
       
@@ -247,7 +259,7 @@ export const SharedExpensesPage = () => {
       
       // Refresh expenses list
       // For simplicity, we'll just add the new expense to the state
-      const newExpense: SharedExpense = {
+      const newExpense: SharedExpenseWithParticipants = {
         id: expenseData.id,
         name: expenseName,
         amount: parseFloat(expenseAmount),
@@ -288,8 +300,8 @@ export const SharedExpensesPage = () => {
   const markAsPaid = async (expenseId: string, userId: string) => {
     try {
       const { error } = await supabase
-        .from('shared_expenses_participants' as any)
-        .update({ paid: true } as any)
+        .from('shared_expenses_participants')
+        .update({ paid: true })
         .eq('shared_expense_id', expenseId)
         .eq('user_id', userId);
         
