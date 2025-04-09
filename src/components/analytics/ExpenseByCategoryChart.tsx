@@ -55,11 +55,14 @@ export const ExpenseByCategoryChart = ({
 }: ExpenseByCategoryChartProps) => {
   const [data, setData] = useState<CategoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDataByCategory = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
         const currentMonth = format(selectedDate, 'MM');
         const currentYear = format(selectedDate, 'yyyy');
         const startDate = `${currentYear}-${currentMonth}-01`;
@@ -75,15 +78,24 @@ export const ExpenseByCategoryChart = ({
         
         if (error) {
           console.error(`Error fetching ${isIncome ? 'income' : 'expense'} by category:`, error);
+          setError(error.message);
           setData([]);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          setData([]);
+          setIsLoading(false);
           return;
         }
 
         const categoryMap = new Map<string, number>();
         
-        data?.forEach((transaction) => {
-          const currentAmount = categoryMap.get(transaction.category) || 0;
-          categoryMap.set(transaction.category, currentAmount + Number(transaction.amount));
+        data.forEach((transaction) => {
+          if (transaction.category && transaction.amount) {
+            const currentAmount = categoryMap.get(transaction.category) || 0;
+            categoryMap.set(transaction.category, currentAmount + Number(transaction.amount));
+          }
         });
         
         // Convert map to array for chart
@@ -94,9 +106,10 @@ export const ExpenseByCategoryChart = ({
           color: colors[name] || (isIncome ? "#2A9D8F" : "#1D3557")
         }));
         
-        setData(chartData.length > 0 ? chartData : []);
+        setData(chartData);
       } catch (error) {
         console.error(`Error calculating ${isIncome ? 'income' : 'expense'} by category:`, error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
         setData([]);
       } finally {
         setIsLoading(false);
@@ -110,6 +123,16 @@ export const ExpenseByCategoryChart = ({
     return (
       <div className="w-full h-full flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <p className="text-muted-foreground text-center">
+          Erro ao carregar dados: {error}
+        </p>
       </div>
     );
   }

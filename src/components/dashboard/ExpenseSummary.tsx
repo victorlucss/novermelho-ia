@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { format } from "date-fns";
@@ -42,11 +43,14 @@ const CustomTooltip = ({ active, payload }: any) => {
 export const ExpenseSummary = ({ selectedDate = new Date() }: ExpenseSummaryProps) => {
   const [data, setData] = useState<ExpenseCategoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExpensesByCategory = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+
         const currentMonth = format(selectedDate, 'MM');
         const currentYear = format(selectedDate, 'yyyy');
         const startDate = `${currentYear}-${currentMonth}-01`;
@@ -62,6 +66,12 @@ export const ExpenseSummary = ({ selectedDate = new Date() }: ExpenseSummaryProp
         
         if (error) {
           console.error('Error fetching expenses by category:', error);
+          setError(error.message);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          setData([]);
           return;
         }
 
@@ -69,8 +79,10 @@ export const ExpenseSummary = ({ selectedDate = new Date() }: ExpenseSummaryProp
         const categoryMap = new Map<string, number>();
         
         data.forEach((transaction) => {
-          const currentAmount = categoryMap.get(transaction.category) || 0;
-          categoryMap.set(transaction.category, currentAmount + parseFloat(String(transaction.amount)));
+          if (transaction.category && transaction.amount) {
+            const currentAmount = categoryMap.get(transaction.category) || 0;
+            categoryMap.set(transaction.category, currentAmount + parseFloat(String(transaction.amount)));
+          }
         });
         
         // Convert map to array for chart
@@ -80,9 +92,10 @@ export const ExpenseSummary = ({ selectedDate = new Date() }: ExpenseSummaryProp
           color: categoryColors[name] || "#1D3557" // Default color if category not in map
         }));
         
-        setData(chartData.length > 0 ? chartData : [{ name: "Sem despesas", value: 1, color: "#ccc" }]);
+        setData(chartData.length > 0 ? chartData : []);
       } catch (error) {
         console.error('Error calculating expenses by category:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
       } finally {
         setIsLoading(false);
       }
@@ -95,6 +108,16 @@ export const ExpenseSummary = ({ selectedDate = new Date() }: ExpenseSummaryProp
     return (
       <div className="w-full h-[300px] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[300px] flex items-center justify-center">
+        <p className="text-muted-foreground text-center">
+          Erro ao carregar dados: {error}
+        </p>
       </div>
     );
   }
