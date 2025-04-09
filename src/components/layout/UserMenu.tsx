@@ -10,9 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User, Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTheme } from "@/providers/ThemeProvider";
 
 interface UserProfileType {
   id: string;
@@ -23,6 +24,7 @@ interface UserProfileType {
 export const UserMenu = () => {
   const [profile, setProfile] = useState<UserProfileType | null>(null);
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -102,6 +104,22 @@ export const UserMenu = () => {
             <Settings className="h-4 w-4 mr-2" />
             Configurações
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={toggleTheme}
+          className="cursor-pointer"
+        >
+          {theme === 'dark' ? (
+            <>
+              <Sun className="h-4 w-4 mr-2" />
+              Modo Claro
+            </>
+          ) : (
+            <>
+              <Moon className="h-4 w-4 mr-2" />
+              Modo Escuro
+            </>
+          )}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 

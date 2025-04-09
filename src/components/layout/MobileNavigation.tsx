@@ -10,9 +10,14 @@ import {
   Book,
   Users,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "@/providers/ThemeProvider";
 
 export const MobileNavigation = () => {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 bg-card border-t shadow-lg">
       <NavLink
@@ -71,6 +76,22 @@ export const MobileNavigation = () => {
         <BarChart className="h-5 w-5 mb-1" />
         <span>Análise</span>
       </NavLink>
+      <button
+        onClick={toggleTheme}
+        className="flex flex-1 flex-col items-center justify-center text-xs font-medium text-muted-foreground hover:text-foreground"
+      >
+        {theme === 'dark' ? (
+          <>
+            <Sun className="h-5 w-5 mb-1" />
+            <span>Claro</span>
+          </>
+        ) : (
+          <>
+            <Moon className="h-5 w-5 mb-1" />
+            <span>Escuro</span>
+          </>
+        )}
+      </button>
       <NavLink
         to="/carteiras"
         className={({ isActive }) =>
@@ -84,20 +105,6 @@ export const MobileNavigation = () => {
       >
         <CreditCard className="h-5 w-5 mb-1" />
         <span>Carteiras</span>
-      </NavLink>
-      <NavLink
-        to="/despesas-compartilhadas"
-        className={({ isActive }) =>
-          cn(
-            "flex flex-1 flex-col items-center justify-center text-xs font-medium",
-            isActive
-              ? "text-accent"
-              : "text-muted-foreground hover:text-foreground"
-          )
-        }
-      >
-        <Users className="h-5 w-5 mb-1" />
-        <span>Compartilhar</span>
       </NavLink>
     </div>
   );

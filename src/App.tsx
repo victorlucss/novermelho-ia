@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +18,7 @@ import { BudgetPage } from "./components/budget/BudgetPage";
 import { SharedExpensesPage } from "./components/shared/SharedExpensesPage";
 import { NotificationsSettingsPage } from "./components/settings/NotificationsSettingsPage";
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -28,9 +28,6 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Set dark theme
-    document.documentElement.classList.add("dark");
-
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -62,149 +59,151 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route
-              path="/login"
-              element={user ? <Navigate to="/" replace /> : <LoginPage />}
-            />
+      <ThemeProvider>
+        <TooltipProvider>
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route
+                path="/login"
+                element={user ? <Navigate to="/" replace /> : <LoginPage />}
+              />
 
-            {/* Protected routes */}
-            <Route
-              path="/"
-              element={
-                user ? (
+              {/* Protected routes */}
+              <Route
+                path="/"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <DashboardPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/despesas"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <ExpensesPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/receitas"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <IncomePage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/analise"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <AnalyticsPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/carteiras"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <WalletPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/orcamentos"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <BudgetPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/perfil"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <ProfilePage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+              
+              <Route
+                path="/despesas-compartilhadas"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <SharedExpensesPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+              
+              <Route
+                path="/configuracoes/notificacoes"
+                element={
+                  user ? (
+                    <AppLayout>
+                      <NotificationsSettingsPage />
+                    </AppLayout>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              {/* For demo purposes, we'll make the dashboard accessible */}
+              <Route
+                path="/demo"
+                element={
                   <AppLayout>
                     <DashboardPage />
                   </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
+                }
+              />
 
-            <Route
-              path="/despesas"
-              element={
-                user ? (
-                  <AppLayout>
-                    <ExpensesPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route
-              path="/receitas"
-              element={
-                user ? (
-                  <AppLayout>
-                    <IncomePage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route
-              path="/analise"
-              element={
-                user ? (
-                  <AppLayout>
-                    <AnalyticsPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route
-              path="/carteiras"
-              element={
-                user ? (
-                  <AppLayout>
-                    <WalletPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route
-              path="/orcamentos"
-              element={
-                user ? (
-                  <AppLayout>
-                    <BudgetPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            <Route
-              path="/perfil"
-              element={
-                user ? (
-                  <AppLayout>
-                    <ProfilePage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            
-            <Route
-              path="/despesas-compartilhadas"
-              element={
-                user ? (
-                  <AppLayout>
-                    <SharedExpensesPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            
-            <Route
-              path="/configuracoes/notificacoes"
-              element={
-                user ? (
-                  <AppLayout>
-                    <NotificationsSettingsPage />
-                  </AppLayout>
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-
-            {/* For demo purposes, we'll make the dashboard accessible */}
-            <Route
-              path="/demo"
-              element={
-                <AppLayout>
-                  <DashboardPage />
-                </AppLayout>
-              }
-            />
-
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
