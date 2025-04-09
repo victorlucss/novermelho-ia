@@ -34,7 +34,7 @@ interface AddBudgetDialogProps {
 }
 
 const CATEGORIES = [
-  { value: "", label: "Todas as categorias" },
+  { value: "all", label: "Todas as categorias" },
   { value: "Moradia", label: "Moradia" },
   { value: "Alimentação", label: "Alimentação" },
   { value: "Transporte", label: "Transporte" },
@@ -101,7 +101,7 @@ export const AddBudgetDialog = ({
         .insert({
           name,
           amount: amountNumber,
-          category: category || null,
+          category: category === "all" ? null : category || null,
           start_date: format(startDate, "yyyy-MM-dd"),
           end_date: format(endDate, "yyyy-MM-dd"),
           user_id: user.id,
