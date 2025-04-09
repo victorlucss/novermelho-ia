@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
@@ -44,6 +45,9 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 217 22% 26%;
     --sidebar-ring: 217 91% 60%;
+    
+    --vermelho: #ef4444;
+    --verde: #2A9D8F;
   }
 }
 
@@ -61,12 +65,86 @@
   .glass {
     @apply bg-card/80 backdrop-blur-lg border border-white/10 shadow-lg;
   }
+  
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-xl hover:bg-card/95;
+  }
 
   /* Form elements styling */
   input,
   select,
   textarea {
     @apply focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
+  }
+  
+  /* Stat card */
+  .stat-card {
+    @apply relative p-6 rounded-xl border border-white/10 bg-gradient-to-br from-card to-card/70 flex flex-col;
+  }
+  
+  .stat-card .stat-icon {
+    @apply absolute right-4 top-4 opacity-60;
+  }
+  
+  .stat-card .stat-value {
+    @apply text-2xl font-bold mt-2;
+  }
+  
+  .stat-card .stat-label {
+    @apply text-sm text-muted-foreground;
+  }
+  
+  .stat-card .stat-trend {
+    @apply text-xs mt-1 flex items-center;
+  }
+  
+  .stat-card.positive {
+    @apply from-blue-500/20 to-blue-500/5;
+  }
+  
+  .stat-card.positive .stat-value {
+    @apply text-blue-400;
+  }
+  
+  /* Animation classes */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes scaleIn {
+    from { 
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to { 
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 }
 
@@ -91,6 +169,14 @@
   color: #22d3ee; /* Aqua Cyan */
 }
 
+.text-vermelho {
+  color: var(--vermelho);
+}
+
+.text-verde {
+  color: var(--verde);
+}
+
 .bg-income {
   background-color: #2563eb;
 }
@@ -109,4 +195,29 @@
 
 .bg-success {
   background-color: #22d3ee;
+}
+
+.bg-vermelho {
+  background-color: var(--vermelho);
+}
+
+.bg-verde {
+  background-color: var(--verde);
+}
+
+/* Chart customizations */
+.recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.recharts-cartesian-axis-line {
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+.recharts-legend-item-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.recharts-tooltip-wrapper {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }

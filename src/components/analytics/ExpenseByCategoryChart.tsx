@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { format } from "date-fns";
@@ -74,6 +75,7 @@ export const ExpenseByCategoryChart = ({
         
         if (error) {
           console.error(`Error fetching ${isIncome ? 'income' : 'expense'} by category:`, error);
+          setData([]);
           return;
         }
 
@@ -92,13 +94,10 @@ export const ExpenseByCategoryChart = ({
           color: colors[name] || (isIncome ? "#2A9D8F" : "#1D3557")
         }));
         
-        setData(chartData.length > 0 ? chartData : [{ 
-          name: isIncome ? "Sem receitas" : "Sem despesas", 
-          value: 1, 
-          color: "#ccc" 
-        }]);
+        setData(chartData.length > 0 ? chartData : []);
       } catch (error) {
         console.error(`Error calculating ${isIncome ? 'income' : 'expense'} by category:`, error);
+        setData([]);
       } finally {
         setIsLoading(false);
       }
@@ -115,7 +114,7 @@ export const ExpenseByCategoryChart = ({
     );
   }
 
-  if (data.length === 0 || (data.length === 1 && (data[0].name === "Sem receitas" || data[0].name === "Sem despesas"))) {
+  if (data.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-muted-foreground text-center">

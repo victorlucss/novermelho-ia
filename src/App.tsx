@@ -16,6 +16,8 @@ import { AnalyticsPage } from "./components/analytics/AnalyticsPage";
 import { WalletPage } from "./components/wallet/WalletPage";
 import { ProfilePage } from "./components/profile/ProfilePage";
 import { BudgetPage } from "./components/budget/BudgetPage";
+import { SharedExpensesPage } from "./components/shared/SharedExpensesPage";
+import { NotificationsSettingsPage } from "./components/settings/NotificationsSettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -155,6 +157,32 @@ const App = () => {
                 user ? (
                   <AppLayout>
                     <ProfilePage />
+                  </AppLayout>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            
+            <Route
+              path="/despesas-compartilhadas"
+              element={
+                user ? (
+                  <AppLayout>
+                    <SharedExpensesPage />
+                  </AppLayout>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            
+            <Route
+              path="/configuracoes/notificacoes"
+              element={
+                user ? (
+                  <AppLayout>
+                    <NotificationsSettingsPage />
                   </AppLayout>
                 ) : (
                   <Navigate to="/login" replace />

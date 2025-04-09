@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,8 +7,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle, Mail, Lock, User, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, Mail, Lock, User, ArrowRight, ChevronLeft, ChevronRight, Google } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+type AuthMode = "login" | "signup" | "reset";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -16,7 +19,8 @@ export const LoginPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLogin, setIsLogin] = useState(true);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +49,32 @@ export const LoginPage = () => {
         description: error.message || "Falha ao fazer login. Tente novamente.",
       });
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+
+      if (error) throw error;
+      
+      // Redirect happens automatically
+    } catch (error: any) {
+      setError(error.message || "Falha ao fazer login com Google. Tente novamente.");
+      toast({
+        variant: "destructive",
+        title: "Erro de login",
+        description: error.message || "Falha ao fazer login com Google. Tente novamente.",
+      });
       setIsLoading(false);
     }
   };
@@ -84,9 +114,33 @@ export const LoginPage = () => {
     }
   };
 
-  const toggleAuthMode = () => {
-    setIsLogin(!isLogin);
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
     setError(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setResetSent(true);
+      toast({
+        title: "Email enviado",
+        description: "Verifique sua caixa de entrada para redefinir sua senha.",
+      });
+    } catch (error: any) {
+      setError(error.message || "Falha ao enviar email de recuperação. Tente novamente.");
+      toast({
+        variant: "destructive",
+        title: "Erro de recuperação",
+        description: error.message || "Falha ao enviar email de recuperação. Tente novamente.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -95,14 +149,24 @@ export const LoginPage = () => {
         <Card className="glass border-0 shadow-2xl backdrop-blur-sm overflow-hidden">
           <div className="absolute top-4 right-4 z-10">
             <button
-              onClick={toggleAuthMode}
+              onClick={() => {
+                setAuthMode(authMode === "login" ? "signup" : "login");
+                setError(null);
+                setResetSent(false);
+              }}
               className="text-sm text-vermelho hover:text-red-700 flex items-center gap-1 transition-all duration-300"
             >
-              {isLogin ? (
+              {authMode === "login" && (
                 <>
                   Criar conta <ChevronRight className="h-4 w-4" />
                 </>
-              ) : (
+              )}
+              {authMode === "signup" && (
+                <>
+                  <ChevronLeft className="h-4 w-4" /> Voltar para login
+                </>
+              )}
+              {authMode === "reset" && (
                 <>
                   <ChevronLeft className="h-4 w-4" /> Voltar para login
                 </>
@@ -117,16 +181,18 @@ export const LoginPage = () => {
               </div>
             </div>
             <CardTitle className="text-3xl font-bold text-center text-vermelho">
-              {isLogin ? "Bem-vindo de volta" : "Crie sua conta"}
+              {authMode === "login" && "Bem-vindo de volta"}
+              {authMode === "signup" && "Crie sua conta"}
+              {authMode === "reset" && "Recuperar senha"}
             </CardTitle>
             <CardDescription className="text-center text-base px-6">
-              {isLogin
-                ? "Entre para gerenciar suas finanças com o NoVermelho"
-                : "Comece a controlar suas despesas hoje mesmo"}
+              {authMode === "login" && "Entre para gerenciar suas finanças com o NoVermelho"}
+              {authMode === "signup" && "Comece a controlar suas despesas hoje mesmo"}
+              {authMode === "reset" && "Digite seu email para recuperar sua senha"}
             </CardDescription>
           </CardHeader>
 
-          {isLogin ? (
+          {authMode === "login" && (
             <form onSubmit={handleSignIn}>
               <CardContent className="space-y-6 px-8">
                 {error && (
@@ -155,9 +221,16 @@ export const LoginPage = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
-                    <a href="#" className="text-sm text-vermelho hover:text-red-700 transition-all">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setAuthMode("reset");
+                        setError(null);
+                      }}
+                      className="text-sm text-vermelho hover:text-red-700 transition-all"
+                    >
                       Esqueceu a senha?
-                    </a>
+                    </button>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
@@ -184,6 +257,26 @@ export const LoginPage = () => {
                   {!isLoading && <ArrowRight className="h-5 w-5" />}
                 </Button>
 
+                <div className="relative w-full py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">ou</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGoogleSignIn}
+                  className="w-full font-medium py-7 border-2 hover:bg-accent/10 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-base"
+                  disabled={isLoading}
+                >
+                  <Google className="h-5 w-5" />
+                  Entrar com Google
+                </Button>
+
                 <div className="text-center text-sm text-muted-foreground">
                   Ao continuar, você concorda com nossos{" "}
                   <a href="https://novermelho.vercel.app/terms" className="underline underline-offset-4 hover:text-vermelho transition-colors">
@@ -197,7 +290,9 @@ export const LoginPage = () => {
                 </div>
               </CardFooter>
             </form>
-          ) : (
+          )}
+
+          {authMode === "signup" && (
             <form onSubmit={handleSignUp}>
               <CardContent className="space-y-6 px-8">
                 {error && (
@@ -266,17 +361,87 @@ export const LoginPage = () => {
                   {!isLoading && <User className="h-5 w-5" />}
                 </Button>
 
+                <div className="relative w-full py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">ou</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGoogleSignIn}
+                  className="w-full font-medium py-7 border-2 hover:bg-accent/10 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-base"
+                  disabled={isLoading}
+                >
+                  <Google className="h-5 w-5" />
+                  Entrar com Google
+                </Button>
+
                 <div className="text-center text-sm text-muted-foreground">
                   Ao continuar, você concorda com nossos{" "}
                   <a href="https://novermelho.vercel.app/terms" className="underline underline-offset-4 hover:text-vermelho transition-colors">
                     Termos de Serviço
                   </a>{" "}
                   e{" "}
-                  <a href="https://novermelho.vercel.app/terms" className="underline underline-offset-4 hover:text-vermelho transition-colors">
+                  <a href="https://novermelho.vercel.app/policy" className="underline underline-offset-4 hover:text-vermelho transition-colors">
                     Política de Privacidade
                   </a>
                   .
                 </div>
+              </CardFooter>
+            </form>
+          )}
+
+          {authMode === "reset" && (
+            <form onSubmit={handlePasswordReset}>
+              <CardContent className="space-y-6 px-8">
+                {error && (
+                  <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-800 animate-pulse">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                {resetSent ? (
+                  <Alert className="border-green-300 bg-green-50 text-green-800">
+                    <AlertDescription>
+                      Email de recuperação enviado. Verifique sua caixa de entrada (e também a pasta de spam).
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="space-y-3">
+                    <Label htmlFor="email-reset" className="text-sm font-medium">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="email-reset"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="pl-12 py-6 rounded-xl border-muted focus:border-vermelho focus:ring-vermelho transition-all text-base"
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+
+              <CardFooter className="flex flex-col space-y-6 px-8 pb-10">
+                {!resetSent && (
+                  <Button
+                    type="submit"
+                    className="w-full font-medium py-7 bg-vermelho hover:bg-red-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-base shadow-md hover:shadow-lg"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Enviando..." : "Enviar link de recuperação"}
+                    {!isLoading && <ArrowRight className="h-5 w-5" />}
+                  </Button>
+                )}
               </CardFooter>
             </form>
           )}
