@@ -1,6 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+// Define a type for user notification settings
+interface UserNotificationSettings {
+  recurrent_expenses_alerts: boolean;
+  shared_expenses_alerts: boolean;
+  budget_alerts: boolean;
+  weekly_reports: boolean;
+}
+
 export class NotificationService {
   private static instance: NotificationService;
   private permission: NotificationPermission = "default";
@@ -54,12 +62,14 @@ export class NotificationService {
       if (!user) return;
       
       const { data: settings } = await supabase
-        .from('user_notification_settings')
+        .from('user_notification_settings' as any)
         .select('recurrent_expenses_alerts')
         .eq('user_id', user.id)
         .single();
       
-      if (!settings || !settings.recurrent_expenses_alerts) return;
+      // Type assertion to access the property
+      const typedSettings = settings as unknown as UserNotificationSettings;
+      if (!typedSettings || !typedSettings.recurrent_expenses_alerts) return;
       
       // Get today's date
       const today = new Date();
@@ -104,12 +114,14 @@ export class NotificationService {
       if (!user) return;
       
       const { data: settings } = await supabase
-        .from('user_notification_settings')
+        .from('user_notification_settings' as any)
         .select('budget_alerts')
         .eq('user_id', user.id)
         .single();
       
-      if (!settings || !settings.budget_alerts) return;
+      // Type assertion to access the property
+      const typedSettings = settings as unknown as UserNotificationSettings;
+      if (!typedSettings || !typedSettings.budget_alerts) return;
       
       // Get current month date range
       const today = new Date();

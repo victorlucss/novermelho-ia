@@ -45,6 +45,74 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string
+          date: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          created_by: string
+          date: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string
+          date?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shared_expenses_participants: {
+        Row: {
+          created_at: string
+          id: string
+          paid: boolean
+          shared_expense_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          paid?: boolean
+          shared_expense_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          paid?: boolean
+          shared_expense_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_expenses_participants_shared_expense_id_fkey"
+            columns: ["shared_expense_id"]
+            isOneToOne: false
+            referencedRelation: "shared_expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -95,10 +163,44 @@ export type Database = {
           },
         ]
       }
+      user_notification_settings: {
+        Row: {
+          budget_alerts: boolean
+          created_at: string
+          id: string
+          recurrent_expenses_alerts: boolean
+          shared_expenses_alerts: boolean
+          updated_at: string
+          user_id: string
+          weekly_reports: boolean
+        }
+        Insert: {
+          budget_alerts?: boolean
+          created_at?: string
+          id?: string
+          recurrent_expenses_alerts?: boolean
+          shared_expenses_alerts?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_reports?: boolean
+        }
+        Update: {
+          budget_alerts?: boolean
+          created_at?: string
+          id?: string
+          recurrent_expenses_alerts?: boolean
+          shared_expenses_alerts?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_reports?: boolean
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          email: string | null
           financial_goal: string | null
           full_name: string | null
           id: string
@@ -107,6 +209,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           financial_goal?: string | null
           full_name?: string | null
           id: string
@@ -115,6 +218,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           financial_goal?: string | null
           full_name?: string | null
           id?: string

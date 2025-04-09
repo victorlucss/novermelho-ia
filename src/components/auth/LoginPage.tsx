@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle, Mail, Lock, User, ArrowRight, ChevronLeft, ChevronRight, Google } from "lucide-react";
+import { AlertCircle, Mail, Lock, User, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type AuthMode = "login" | "signup" | "reset";
@@ -273,7 +272,9 @@ export const LoginPage = () => {
                   className="w-full font-medium py-7 border-2 hover:bg-accent/10 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-base"
                   disabled={isLoading}
                 >
-                  <Google className="h-5 w-5" />
+                  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 488 512" className="h-5 w-5">
+                    <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
+                  </svg>
                   Entrar com Google
                 </Button>
 

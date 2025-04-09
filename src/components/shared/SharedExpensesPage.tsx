@@ -67,7 +67,7 @@ export const SharedExpensesPage = () => {
         
         // Get all shared expenses where the current user is a participant
         const { data, error } = await supabase
-          .from('shared_expenses_participants')
+          .from('shared_expenses_participants' as any)
           .select(`
             shared_expense:shared_expenses(
               id,
@@ -191,14 +191,14 @@ export const SharedExpensesPage = () => {
       
       // Create the shared expense
       const { data: expenseData, error: expenseError } = await supabase
-        .from('shared_expenses')
+        .from('shared_expenses' as any)
         .insert({
           name: expenseName,
           amount: parseFloat(expenseAmount),
           category: expenseCategory,
           date: expenseDate,
-          created_by: user.id
-        })
+          created_by: user.id,
+        } as any)
         .select('id')
         .single();
         
@@ -227,8 +227,8 @@ export const SharedExpensesPage = () => {
       
       // Insert all participants
       const { error: participantsError } = await supabase
-        .from('shared_expenses_participants')
-        .insert(participants);
+        .from('shared_expenses_participants' as any)
+        .insert(participants as any);
         
       if (participantsError) throw participantsError;
       
@@ -288,8 +288,8 @@ export const SharedExpensesPage = () => {
   const markAsPaid = async (expenseId: string, userId: string) => {
     try {
       const { error } = await supabase
-        .from('shared_expenses_participants')
-        .update({ paid: true })
+        .from('shared_expenses_participants' as any)
+        .update({ paid: true } as any)
         .eq('shared_expense_id', expenseId)
         .eq('user_id', userId);
         

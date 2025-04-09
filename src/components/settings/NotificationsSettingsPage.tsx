@@ -16,6 +16,13 @@ interface NotificationSettings {
   weeklyReports: boolean;
 }
 
+interface UserNotificationSettings {
+  recurrent_expenses_alerts: boolean;
+  shared_expenses_alerts: boolean;
+  budget_alerts: boolean;
+  weekly_reports: boolean;
+}
+
 export const NotificationsSettingsPage = () => {
   const [settings, setSettings] = useState<NotificationSettings>({
     recurrentExpenses: true,
@@ -72,11 +79,12 @@ export const NotificationsSettingsPage = () => {
         
         // If settings exist, use them
         if (data) {
+          const typedData = data as unknown as UserNotificationSettings;
           setSettings({
-            recurrentExpenses: data.recurrent_expenses_alerts,
-            sharedExpenses: data.shared_expenses_alerts,
-            budgetAlerts: data.budget_alerts,
-            weeklyReports: data.weekly_reports,
+            recurrentExpenses: typedData.recurrent_expenses_alerts,
+            sharedExpenses: typedData.shared_expenses_alerts,
+            budgetAlerts: typedData.budget_alerts,
+            weeklyReports: typedData.weekly_reports,
           });
         }
         
@@ -130,7 +138,7 @@ export const NotificationsSettingsPage = () => {
             budget_alerts: settings.budgetAlerts,
             weekly_reports: settings.weeklyReports,
             updated_at: new Date().toISOString(),
-          })
+          } as any)
           .eq('user_id', user.id);
           
         if (updateError) throw updateError;
@@ -144,7 +152,7 @@ export const NotificationsSettingsPage = () => {
             shared_expenses_alerts: settings.sharedExpenses,
             budget_alerts: settings.budgetAlerts,
             weekly_reports: settings.weeklyReports,
-          });
+          } as any);
           
         if (insertError) throw insertError;
       }
